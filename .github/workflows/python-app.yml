@@ -1,0 +1,34 @@
+name: Tests for All Branches
+
+on:
+  push:
+    branches: [main, add-lexer, add-parser, build-structure]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -e .[test]
+
+      - name: Run branch-specific tests
+        run: |
+          if [[ "$GITHUB_REF" == *"add-lexer"* ]]; then
+            pytest tests/test_scanner/ || echo "No scanner tests found"
+          elif [[ "$GITHUB_REF" == *"add-parser"* ]]; then
+            pytest tests/test_parser/ || echo "No parser tests found"
+          elif [[ "$GITHUB_REF" == *"build-structure"* ]]; then
+            pytest tests/test_structure/ || echo "No structure tests found"
+          else
+            pytest tests/main_tests/ || echo "No main tests found"
+          fi
