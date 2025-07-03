@@ -9,9 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        branch: [main, add-lexer, add-parser, build-structure]
+
     steps:
       - uses: actions/checkout@v4
 
@@ -27,12 +25,5 @@ jobs:
 
       - name: Run tests
         run: |
-          if [ "${{ github.ref }}" == "refs/heads/add-lexer" ]; then
-            pytest tests/test_scanner/
-          elif [ "${{ github.ref }}" == "refs/heads/add-parser" ]; then
-            pytest tests/test_parser/
-          elif [ "${{ github.ref }}" == "refs/heads/build-structure" ]; then
-            pytest tests/test_dummy/
-          else
-            pytest tests/main_tests/
-          fi
+          echo "Running tests on branch ${{ github.ref }}"
+          pytest tests/
