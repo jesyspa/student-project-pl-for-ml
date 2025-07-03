@@ -1,7 +1,7 @@
 from typing import List
 
-from nelox_token import Token
-from tokenType import TokenType
+from .nelox_token import Token
+from .tokenType import TokenType
 
 
 def is_alpha_numeric(c):
