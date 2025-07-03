@@ -25,16 +25,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
 
-      - name: Run branch-specific tests
+      - name: Run tests
         run: |
           if [ "${{ github.ref }}" == "refs/heads/add-lexer" ]; then
             pytest tests/test_scanner/
           elif [ "${{ github.ref }}" == "refs/heads/add-parser" ]; then
             pytest tests/test_parser/
-          else
-            echo "Parser tests not found, skipping..."
           elif [ "${{ github.ref }}" == "refs/heads/build-structure" ]; then
             pytest tests/test_dummy/
           else
-            pytest tests/main_tests/  
+            pytest tests/main_tests/
           fi
