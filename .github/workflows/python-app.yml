@@ -1,0 +1,36 @@
+name: Tests for All Branches
+
+on:
+  push:
+    branches: [main, add-lexer, add-parser, build-structure]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        branch: [main, add-lexer, add-parser, build-structure]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -e .
+
+      - name: Run branch-specific tests
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/add-lexer" ]; then
+            pytest tests/test_scanner/
+          elif [ "${{ github.ref }}" == "refs/heads/add-parser" ]; then
+            pytest tests/test_parser/
+          elif [ "${{ github.ref }}" == "refs/heads/build-structure" ]; then
+            pytest tests/test_structure/
+          else
+            pytest tests/main_tests/  
+          fi
