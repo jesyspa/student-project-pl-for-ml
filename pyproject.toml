@@ -15,7 +15,3 @@ packages = ["nelox"]
 [tool.pytest.ini_options]
 addopts = "-v"
 testpaths = ["tests"]
-
-[build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"

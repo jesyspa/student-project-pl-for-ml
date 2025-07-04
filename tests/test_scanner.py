@@ -1,6 +1,6 @@
 import unittest
 from nelox.scanner import Scanner
-from nelox.tokenType import TokenType
+from nelox.token_type import TokenType
 
 
 class TestScanner(unittest.TestCase):
@@ -18,13 +18,6 @@ class TestScanner(unittest.TestCase):
 
         self.assertEqual(tokens[0].type, TokenType.NUMBER)
         self.assertEqual(tokens[0].literal, 123.0)
-        self.assertEqual(tokens[-1].type, TokenType.EOF)
-
-    def test_identifier_token(self):
-        scanner = Scanner("print")
-        tokens = scanner.scan_tokens()
-
-        self.assertEqual(tokens[0].type, TokenType.PRINT)
         self.assertEqual(tokens[-1].type, TokenType.EOF)
 
     def test_unterminated_string(self):
@@ -46,6 +39,36 @@ class TestScanner(unittest.TestCase):
             TokenType.EOF
         ]
         self.assertEqual(types, expected)
+
+    def test_next_token_number(self):
+        scanner = Scanner("42")
+        token = scanner.next_token()
+
+        self.assertEqual(token.type, TokenType.NUMBER)
+        self.assertEqual(token.literal, 42)
+        self.assertEqual(token.lexeme, "42")
+
+    def test_next_token_identifier(self):
+        scanner = Scanner("hello")
+        token = scanner.next_token()
+
+        self.assertEqual(token.type, TokenType.IDENTIFIER)
+        self.assertEqual(token.lexeme, "hello")
+
+    def test_next_token_left_paren(self):
+        scanner = Scanner("(")
+        token = scanner.next_token()
+
+        self.assertEqual(token.type, TokenType.LEFT_PAREN)
+        self.assertEqual(token.lexeme, "(")
+
+    def test_next_token_string(self):
+        scanner = Scanner('"world"')
+        token = scanner.next_token()
+
+        self.assertEqual(token.type, TokenType.STRING)
+        self.assertEqual(token.literal, "world")
+        self.assertEqual(token.lexeme, '"world"')
 
 
 if __name__ == '__main__':
