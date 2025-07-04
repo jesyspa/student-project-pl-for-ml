@@ -92,6 +92,5 @@ class TestScanner(unittest.TestCase):
         actual_types = [token.type for token in tokens]
         self.assertEqual(actual_types, expected_types)
 
-
 if __name__ == '__main__':
     unittest.main()
