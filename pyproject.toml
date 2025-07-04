@@ -1,7 +1,7 @@
 [project]
 name = "ml-for-pl-problems"
 version = "0.1.0"
-description = "Parser for Nelox"
+description = "Nelox, a toy programming language to experiment with code generation"
 authors = [
     {"name" = "Roza", "email" = "roza.keshishian@jetbrains.com"},
     {"name" = "Azamat", "email" = "azamat.amanbay@jetbrains.com"}
