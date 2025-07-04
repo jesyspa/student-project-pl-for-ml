@@ -5,7 +5,7 @@ to improve (ML-based) code generation.
 
 ## How to Run the Project
 1. Install Python
-Make sure you have Python 3.10 or higher installed.
+Make sure you have Python 3.11 or higher installed.
 
 2. Install Dependencies
 The project doesn’t need any extra libraries, except pytest for running tests.

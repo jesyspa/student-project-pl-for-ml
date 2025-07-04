@@ -70,6 +70,28 @@ class TestScanner(unittest.TestCase):
         self.assertEqual(token.literal, "world")
         self.assertEqual(token.lexeme, '"world"')
 
+    def test_multiple_next_token_calls(self):
+        scanner = Scanner("(foo 123)")
+        tokens = []
+
+        while not scanner.is_at_end():
+            token = scanner.next_token()
+            if token:
+                tokens.append(token)
+
+        tokens.append(scanner.make_token(TokenType.EOF))
+
+        expected_types = [
+            TokenType.LEFT_PAREN,
+            TokenType.IDENTIFIER,
+            TokenType.NUMBER,
+            TokenType.RIGHT_PAREN,
+            TokenType.EOF
+        ]
+
+        actual_types = [token.type for token in tokens]
+        self.assertEqual(actual_types, expected_types)
+
 
 if __name__ == '__main__':
     unittest.main()

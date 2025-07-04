@@ -27,7 +27,6 @@ class Scanner:
 
     def scan_tokens(self) -> List[Token]:
         while not self.is_at_end():
-            self.start = self.current
             token = self.next_token()
             if token:
                 self.tokens.append(token)
@@ -43,30 +42,35 @@ class Scanner:
         self.current += 1
         return c
 
-    def add_token(self, type: TokenType, literal=None) -> Token:
+    def make_token(self, type: TokenType, literal=None) -> Token:
         text = self.source[self.start:self.current]
         return Token(type, text, literal, self.line)
 
     def next_token(self) -> Token | None:
-        c = self.advance()
+        while True:
+            if self.is_at_end():
+                return self.make_token(TokenType.EOF)
 
-        if c == '(':
-            return self.add_token(TokenType.LEFT_PAREN)
-        elif c == ')':
-            return self.add_token(TokenType.RIGHT_PAREN)
-        elif c.isdigit():
-            return self.number()
-        elif is_alpha(c):
-            return self.identifier()
-        elif c == '"':
-            return self.string()
-        elif c in (' ', '\r', '\t'):
-            return None
-        elif c == '\n':
-            self.line += 1
-            return None
-        else:
-            raise SyntaxError(f"[line {self.line}] Unexpected character: '{c}'")
+            self.start = self.current
+            c = self.advance()
+
+            if c == '(':
+                return self.make_token(TokenType.LEFT_PAREN)
+            elif c == ')':
+                return self.make_token(TokenType.RIGHT_PAREN)
+            elif c.isdigit():
+                return self.number()
+            elif is_alpha(c):
+                return self.identifier()
+            elif c == '"':
+                return self.string()
+            elif c in (' ', '\r', '\t'):
+                continue
+            elif c == '\n':
+                self.line += 1
+                continue
+            else:
+                raise SyntaxError(f"[line {self.line}] Unexpected character: '{c}'")
 
     def match(self, expected):
         if self.is_at_end():
@@ -97,20 +101,20 @@ class Scanner:
 
         self.advance()
         value = self.source[self.start + 1: self.current - 1]
-        return self.add_token(TokenType.STRING, value)
+        return self.make_token(TokenType.STRING, value)
 
     def number(self) -> Token:
         while self.peek().isdigit():
             self.advance()
 
         text = self.source[self.start:self.current]
-        return self.add_token(TokenType.NUMBER, int(text))
+        return self.make_token(TokenType.NUMBER, int(text))
 
     def identifier(self) -> Token:
         while is_alpha_numeric(self.peek()):
             self.advance()
 
-        return self.add_token(TokenType.IDENTIFIER)
+        return self.make_token(TokenType.IDENTIFIER)
 
 
 def scan_all_tokens(source: str) -> List[Token]:
