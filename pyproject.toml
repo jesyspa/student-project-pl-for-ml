@@ -16,4 +16,6 @@ packages = ["nelox"]
 addopts = "-v"
 testpaths = ["tests"]
 
-
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
