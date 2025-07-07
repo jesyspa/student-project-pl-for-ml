@@ -69,7 +69,6 @@ class Scanner:
             elif c in (' ', '\r', '\t'):
                 continue
             elif c == '\n':
-                self.line += 1
                 continue
             else:
                 raise SyntaxError(f"[line {self.line}] Unexpected character: '{c}'")

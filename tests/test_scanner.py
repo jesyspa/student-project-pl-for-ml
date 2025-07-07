@@ -1,5 +1,5 @@
 import unittest
-from nelox.scanner import Scanner
+from nelox.scanner import Scanner, scan_all_tokens
 from nelox.token_type import TokenType
 
 
@@ -91,6 +91,28 @@ class TestScanner(unittest.TestCase):
 
         actual_types = [token.type for token in tokens]
         self.assertEqual(actual_types, expected_types)
+
+    def test_line_numbers(self):
+
+        source = '(print\n 42\n "hello")'
+        tokens = scan_all_tokens(source)
+
+        assert tokens[0].type == TokenType.LEFT_PAREN
+        assert tokens[0].line == 1
+
+        assert tokens[1].type == TokenType.IDENTIFIER
+        assert tokens[1].line == 1
+
+        assert tokens[2].type == TokenType.NUMBER
+        assert tokens[2].line == 2
+
+        assert tokens[3].type == TokenType.STRING
+        assert tokens[3].line == 3
+
+        assert tokens[4].type == TokenType.RIGHT_PAREN
+        assert tokens[4].line == 3
+
+        assert tokens[5].type == TokenType.EOF
 
 
 if __name__ == '__main__':
