@@ -40,6 +40,8 @@ class Scanner:
     def advance(self) -> str:
         c = self.source[self.current]
         self.current += 1
+        if c == '\n':
+            self.line += 1
         return c
 
     def make_token(self, type: TokenType, literal=None) -> Token:
@@ -72,28 +74,13 @@ class Scanner:
             else:
                 raise SyntaxError(f"[line {self.line}] Unexpected character: '{c}'")
 
-    def match(self, expected):
-        if self.is_at_end():
-            return False
-        if self.source[self.current] != expected:
-            return False
-        self.current += 1
-        return True
-
     def peek(self):
         if self.is_at_end():
             return '\0'
         return self.source[self.current]
 
-    def peek_next(self):
-        if self.current + 1 >= len(self.source):
-            return '\0'
-        return self.source[self.current + 1]
-
     def string(self) -> Token:
         while self.peek() != '"' and not self.is_at_end():
-            if self.peek() == '\n':
-                self.line += 1
             self.advance()
 
         if self.is_at_end():
@@ -111,10 +98,13 @@ class Scanner:
         return self.make_token(TokenType.NUMBER, int(text))
 
     def identifier(self) -> Token:
-        while is_alpha_numeric(self.peek()):
+        while not self.is_at_end() and not self.is_whitespace_or_delimiter(self.peek()):
             self.advance()
 
         return self.make_token(TokenType.IDENTIFIER)
+
+    def is_whitespace_or_delimiter(self, char):
+        return char.isspace() or char in '()"'
 
 
 def scan_all_tokens(source: str) -> List[Token]:
