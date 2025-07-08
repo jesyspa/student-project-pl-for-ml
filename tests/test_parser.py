@@ -1,6 +1,7 @@
 import unittest
 from nelox.parser import Parser
 from nelox.scanner import Scanner
+from nelox.token_type import TokenType
 
 
 class ParserTest(unittest.TestCase):
@@ -69,6 +70,44 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(second[0], 'define')
         self.assertEqual(second[1], 'x')
         self.assertEqual(second[2], 42)
+
+    def test_string_literal(self):
+        source = '"hello world"'
+        scanner = Scanner(source)
+        parser = Parser(scanner)
+        result = parser.parse()
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], "hello world")
+
+    def test_peek_after_scan(self):
+        scanner = Scanner("(foo 123)")
+        scanner.scan_tokens()
+
+        token = scanner.peek()
+        self.assertEqual(token.type, TokenType.LEFT_PAREN)
+
+        token_again = scanner.peek()
+        self.assertEqual(token_again.type, TokenType.LEFT_PAREN)
+
+    def test_advance_progresses_through_tokens(self):
+        scanner = Scanner("(foo 123)")
+        scanner.scan_tokens()
+
+        types = []
+        while not scanner.is_at_end():
+            token = scanner.advance()
+            types.append(token.type)
+
+        self.assertEqual(
+            types,
+            [
+                TokenType.LEFT_PAREN,
+                TokenType.IDENTIFIER,
+                TokenType.NUMBER,
+                TokenType.RIGHT_PAREN
+            ]
+        )
 
 
 if __name__ == '__main__':

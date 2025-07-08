@@ -18,8 +18,10 @@ class Parser:
         match token.type:
             case TokenType.LEFT_PAREN:
                 return self.list_expr()
-            case TokenType.NUMBER | TokenType.STRING | TokenType.IDENTIFIER:
-                return token.literal if token.literal is not None else token.lexeme
+            case TokenType.NUMBER | TokenType.STRING:
+                return token.literal
+            case TokenType.IDENTIFIER:
+                return token.lexeme
             case _:
                 raise Exception(f"[line {token.line}] Unexpected token: {token.type}")
 
@@ -39,8 +41,6 @@ class Parser:
         raise Exception(f"[line {token.line}] Error: {message}")
 
     def check(self, token_type):
-        if self.scanner.is_at_end():
-            return False
         return self.peek().type == token_type
 
     def advance(self):

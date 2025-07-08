@@ -60,13 +60,7 @@ class Scanner:
                 return self.make_token(TokenType.LEFT_PAREN)
             elif c == ')':
                 return self.make_token(TokenType.RIGHT_PAREN)
-            elif c == '+':
-                return self.make_token(TokenType.IDENTIFIER)
-            elif c == '-':
-                return self.make_token(TokenType.IDENTIFIER)
-            elif c == '*':
-                return self.make_token(TokenType.IDENTIFIER)
-            elif c == '/':
+            elif c in "+-*/":
                 return self.make_token(TokenType.IDENTIFIER)
             elif c.isdigit():
                 return self.number()
@@ -113,17 +107,16 @@ class Scanner:
 
     def advance(self) -> Token:
         if not self.is_at_end():
+            token = self.tokens[self.token_index]
             self.token_index += 1
-        return self.previous()
+            return token
+        return self.tokens[-1]
 
     def is_at_end(self) -> bool:
         return self.peek().type == TokenType.EOF
 
     def peek(self) -> Token:
         return self.tokens[self.token_index]
-
-    def previous(self) -> Token:
-        return self.tokens[self.token_index - 1]
 
 
 def scan_all_tokens(source: str) -> List[Token]:
