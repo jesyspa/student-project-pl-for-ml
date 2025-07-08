@@ -2,6 +2,7 @@ import unittest
 from nelox.parser import Parser
 from nelox.scanner import Scanner
 from nelox.token_type import TokenType
+from nelox.Expr import Variable, Literal, Call
 
 
 class ParserTest(unittest.TestCase):
@@ -16,9 +17,12 @@ class ParserTest(unittest.TestCase):
         expr = exprs[0]
 
         self.assertIsInstance(expr, list)
-        self.assertEqual(expr[0], '+')
-        self.assertEqual(expr[1], 1)
-        self.assertEqual(expr[2], 2)
+        self.assertIsInstance(expr[0], Variable)
+        self.assertEqual(expr[0].name.lexeme, '+')
+        self.assertIsInstance(expr[1], Literal)
+        self.assertEqual(expr[1].value, 1)
+        self.assertIsInstance(expr[2], Literal)
+        self.assertEqual(expr[2].value, 2)
 
     def test_define_variable(self):
         source = "(define x 42)"
@@ -30,9 +34,12 @@ class ParserTest(unittest.TestCase):
         expr = exprs[0]
 
         self.assertIsInstance(expr, list)
-        self.assertEqual(expr[0], 'define')
-        self.assertEqual(expr[1], 'x')
-        self.assertEqual(expr[2], 42)
+        self.assertIsInstance(expr[0], Variable)
+        self.assertEqual(expr[0].name.lexeme, 'define')
+        self.assertIsInstance(expr[1], Variable)
+        self.assertEqual(expr[1].name.lexeme, 'x')
+        self.assertIsInstance(expr[2], Literal)
+        self.assertEqual(expr[2].value, 42)
 
     def test_nested_lists(self):
         source = "(+ 1 (* 2 3))"
@@ -44,12 +51,19 @@ class ParserTest(unittest.TestCase):
         expr = exprs[0]
 
         self.assertIsInstance(expr, list)
-        self.assertEqual(expr[0], '+')
-        self.assertEqual(expr[1], 1)
-        self.assertIsInstance(expr[2], list)
-        self.assertEqual(expr[2][0], '*')
-        self.assertEqual(expr[2][1], 2)
-        self.assertEqual(expr[2][2], 3)
+        self.assertIsInstance(expr[0], Variable)
+        self.assertEqual(expr[0].name.lexeme, '+')
+        self.assertIsInstance(expr[1], Literal)
+        self.assertEqual(expr[1].value, 1)
+
+        inner = expr[2]
+        self.assertIsInstance(inner, list)
+        self.assertIsInstance(inner[0], Variable)
+        self.assertEqual(inner[0].name.lexeme, '*')
+        self.assertIsInstance(inner[1], Literal)
+        self.assertEqual(inner[1].value, 2)
+        self.assertIsInstance(inner[2], Literal)
+        self.assertEqual(inner[2].value, 3)
 
     def test_multiple_lists(self):
         source = "(+ 1 2) (define x 42)"
@@ -60,16 +74,18 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(len(exprs), 2)
 
         first = exprs[0]
-        self.assertIsInstance(first, list)
-        self.assertEqual(first[0], '+')
-        self.assertEqual(first[1], 1)
-        self.assertEqual(first[2], 2)
+        self.assertIsInstance(first[0], Variable)
+        self.assertEqual(first[0].name.lexeme, '+')
+        self.assertEqual(first[1].value, 1)
+        self.assertEqual(first[2].value, 2)
 
         second = exprs[1]
-        self.assertIsInstance(second, list)
-        self.assertEqual(second[0], 'define')
-        self.assertEqual(second[1], 'x')
-        self.assertEqual(second[2], 42)
+        self.assertIsInstance(second[0], Variable)
+        self.assertEqual(second[0].name.lexeme, 'define')
+        self.assertIsInstance(second[1], Variable)
+        self.assertEqual(second[1].name.lexeme, 'x')
+        self.assertIsInstance(second[2], Literal)
+        self.assertEqual(second[2].value, 42)
 
     def test_string_literal(self):
         source = '"hello world"'
@@ -78,7 +94,8 @@ class ParserTest(unittest.TestCase):
         result = parser.parse()
 
         self.assertEqual(len(result), 1)
-        self.assertEqual(result[0], "hello world")
+        self.assertIsInstance(result[0], Literal)
+        self.assertEqual(result[0].value, "hello world")
 
     def test_peek_after_scan(self):
         scanner = Scanner("(foo 123)")

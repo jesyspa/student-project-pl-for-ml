@@ -1,3 +1,4 @@
+from nelox.Expr import Variable, Literal
 from nelox.token_type import TokenType
 from nelox.scanner import Scanner
 
@@ -19,9 +20,9 @@ class Parser:
             case TokenType.LEFT_PAREN:
                 return self.list_expr()
             case TokenType.NUMBER | TokenType.STRING:
-                return token.literal
+                return Literal(token.literal)
             case TokenType.IDENTIFIER:
-                return token.lexeme
+                return Variable(token)
             case _:
                 raise Exception(f"[line {token.line}] Unexpected token: {token.type}")
 
