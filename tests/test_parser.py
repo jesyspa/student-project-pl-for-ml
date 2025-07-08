@@ -1,50 +1,74 @@
 import unittest
-from nelox.token_type import TokenType
-from nelox.nelox_token import Token
 from nelox.parser import Parser
-from nelox.Expr import Binary, Literal, Variable, Assign
+from nelox.scanner import Scanner
 
 
 class ParserTest(unittest.TestCase):
 
     def test_simple_addition(self):
-        tokens = [
-            Token(TokenType.LEFT_PAREN, '(', None, 1),
-            Token(TokenType.IDENTIFIER, '+', None, 1),
-            Token(TokenType.NUMBER, '1', 1, 1),
-            Token(TokenType.NUMBER, '2', 2, 1),
-            Token(TokenType.RIGHT_PAREN, ')', None, 1),
-            Token(TokenType.EOF, '', None, 1)
-        ]
-        parser = Parser(tokens)
+        source = "(+ 1 2)"
+        scanner = Scanner(source)
+        parser = Parser(scanner)
         exprs = parser.parse()
 
         self.assertEqual(len(exprs), 1)
-        self.assertIsInstance(exprs[0], Binary)
-        self.assertIsInstance(exprs[0].left, Literal)
-        self.assertEqual(exprs[0].left.value, 1)
-        self.assertEqual(exprs[0].operator.lexeme, '+')
-        self.assertIsInstance(exprs[0].right, Literal)
-        self.assertEqual(exprs[0].right.value, 2)
+        expr = exprs[0]
+
+        self.assertIsInstance(expr, list)
+        self.assertEqual(expr[0], '+')
+        self.assertEqual(expr[1], 1)
+        self.assertEqual(expr[2], 2)
 
     def test_define_variable(self):
-        tokens = [
-            Token(TokenType.LEFT_PAREN, '(', None, 1),
-            Token(TokenType.IDENTIFIER, 'define', None, 1),
-            Token(TokenType.IDENTIFIER, 'x', None, 1),
-            Token(TokenType.NUMBER, '42', 42, 1),
-            Token(TokenType.RIGHT_PAREN, ')', None, 1),
-            Token(TokenType.EOF, '', None, 1)
-        ]
-        parser = Parser(tokens)
+        source = "(define x 42)"
+        scanner = Scanner(source)
+        parser = Parser(scanner)
         exprs = parser.parse()
 
         self.assertEqual(len(exprs), 1)
-        self.assertIsInstance(exprs[0], Assign)
-        self.assertIsInstance(exprs[0].name, Variable)
-        self.assertEqual(exprs[0].name.name.lexeme, 'x')
-        self.assertIsInstance(exprs[0].value, Literal)
-        self.assertEqual(exprs[0].value.value, 42)
+        expr = exprs[0]
+
+        self.assertIsInstance(expr, list)
+        self.assertEqual(expr[0], 'define')
+        self.assertEqual(expr[1], 'x')
+        self.assertEqual(expr[2], 42)
+
+    def test_nested_lists(self):
+        source = "(+ 1 (* 2 3))"
+        scanner = Scanner(source)
+        parser = Parser(scanner)
+        exprs = parser.parse()
+
+        self.assertEqual(len(exprs), 1)
+        expr = exprs[0]
+
+        self.assertIsInstance(expr, list)
+        self.assertEqual(expr[0], '+')
+        self.assertEqual(expr[1], 1)
+        self.assertIsInstance(expr[2], list)
+        self.assertEqual(expr[2][0], '*')
+        self.assertEqual(expr[2][1], 2)
+        self.assertEqual(expr[2][2], 3)
+
+    def test_multiple_lists(self):
+        source = "(+ 1 2) (define x 42)"
+        scanner = Scanner(source)
+        parser = Parser(scanner)
+        exprs = parser.parse()
+
+        self.assertEqual(len(exprs), 2)
+
+        first = exprs[0]
+        self.assertIsInstance(first, list)
+        self.assertEqual(first[0], '+')
+        self.assertEqual(first[1], 1)
+        self.assertEqual(first[2], 2)
+
+        second = exprs[1]
+        self.assertIsInstance(second, list)
+        self.assertEqual(second[0], 'define')
+        self.assertEqual(second[1], 'x')
+        self.assertEqual(second[2], 42)
 
 
 if __name__ == '__main__':
