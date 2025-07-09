@@ -10,15 +10,9 @@ def main():
     output_dir = sys.argv[1]
 
     define_ast(output_dir, "Expr", [
-        "Assign   : name, value",
-        "Binary   : left, operator, right",
-        "Call     : callee, paren, arguments",
         "Literal  : value",
-        "Logical  : left, operator, right",
-        "Unary    : operator, right",
         "Variable : name",
-        "Lambda   : params, body",
-        "If       : condition, then_branch, else_branch"
+        "ListExpr    : elements"
     ])
 
     define_ast(output_dir, "Stmt", [
