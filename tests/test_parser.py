@@ -2,7 +2,7 @@ import unittest
 from nelox.parser import Parser
 from nelox.scanner import Scanner
 from nelox.token_type import TokenType
-from nelox.Expr import Variable, Literal, ListExpr
+from nelox.Expr import Variable, Literal, List
 
 
 class ParserTest(unittest.TestCase):
@@ -16,7 +16,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(len(exprs), 1)
         expr = exprs[0]
 
-        self.assertIsInstance(expr, ListExpr)
+        self.assertIsInstance(expr, List)
         self.assertIsInstance(expr.elements[0], Variable)
         self.assertEqual(expr.elements[0].name.lexeme, '+')
         self.assertIsInstance(expr.elements[1], Literal)
@@ -33,7 +33,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(len(exprs), 1)
         expr = exprs[0]
 
-        self.assertIsInstance(expr, ListExpr)
+        self.assertIsInstance(expr, List)
         self.assertIsInstance(expr.elements[0], Variable)
         self.assertEqual(expr.elements[0].name.lexeme, 'define')
         self.assertIsInstance(expr.elements[1], Variable)
@@ -50,14 +50,14 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(len(exprs), 1)
         expr = exprs[0]
 
-        self.assertIsInstance(expr, ListExpr)
+        self.assertIsInstance(expr, List)
         self.assertIsInstance(expr.elements[0], Variable)
         self.assertEqual(expr.elements[0].name.lexeme, '+')
         self.assertIsInstance(expr.elements[1], Literal)
         self.assertEqual(expr.elements[1].value, 1)
 
         inner = expr.elements[2]
-        self.assertIsInstance(inner, ListExpr)
+        self.assertIsInstance(inner, List)
         self.assertIsInstance(inner.elements[0], Variable)
         self.assertEqual(inner.elements[0].name.lexeme, '*')
         self.assertIsInstance(inner.elements[1], Literal)

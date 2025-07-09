@@ -6,9 +6,11 @@ class Expr:
 class ExprVisitor:
     def visit_Literal_Expr(self, expr):
         pass
+
     def visit_Variable_Expr(self, expr):
         pass
-    def visit_ListExpr_Expr(self, expr):
+
+    def visit_List_Expr(self, expr):
         pass
 
 
@@ -28,9 +30,10 @@ class Variable(Expr):
         return visitor.visit_Variable_Expr(self)
 
 
-class ListExpr(Expr):
+class List(Expr):
     def __init__(self, elements):
         self.elements = elements
 
     def accept(self, visitor):
-        return visitor.visit_ListExpr_Expr(self)
+        return visitor.visit_List_Expr(self)
+
