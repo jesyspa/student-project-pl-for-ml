@@ -4,14 +4,11 @@ class Expr:
 
 
 class ExprVisitor:
-
-    def visit_literal_expr(self, expr):
+    def visit_Literal_Expr(self, expr):
         pass
-
-    def visit_variable_expr(self, expr):
+    def visit_Variable_Expr(self, expr):
         pass
-
-    def visit_list_expr(self, expr):
+    def visit_ListExpr_Expr(self, expr):
         pass
 
 
@@ -20,7 +17,7 @@ class Literal(Expr):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visit_literal_expr(self)
+        return visitor.visit_Literal_Expr(self)
 
 
 class Variable(Expr):
@@ -28,7 +25,7 @@ class Variable(Expr):
         self.name = name
 
     def accept(self, visitor):
-        return visitor.visit_variable_expr(self)
+        return visitor.visit_Variable_Expr(self)
 
 
 class ListExpr(Expr):
@@ -36,4 +33,4 @@ class ListExpr(Expr):
         self.elements = elements
 
     def accept(self, visitor):
-        return visitor.visit_list_expr(self)
+        return visitor.visit_ListExpr_Expr(self)
