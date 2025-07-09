@@ -1,4 +1,4 @@
-from nelox.Expr import Variable, Literal, ListExpr
+from nelox.Expr import Variable, Literal, List
 from nelox.token_type import TokenType
 from nelox.scanner import Scanner
 
@@ -33,7 +33,7 @@ class Parser:
             if self.scanner.is_at_end():
                 raise Exception("Unterminated list")
         self.consume(TokenType.RIGHT_PAREN, "Expect ')' after list.")
-        return ListExpr(items)
+        return List(items)
 
     def consume(self, token_type, message):
         if self.check(token_type):

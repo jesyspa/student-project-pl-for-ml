@@ -2,15 +2,13 @@ class Expr:
     def accept(self, visitor):
         raise NotImplementedError()
 
-
 class ExprVisitor:
     def visit_Literal_Expr(self, expr):
         pass
     def visit_Variable_Expr(self, expr):
         pass
-    def visit_ListExpr_Expr(self, expr):
+    def visit_List_Expr(self, expr):
         pass
-
 
 class Literal(Expr):
     def __init__(self, value):
@@ -19,7 +17,6 @@ class Literal(Expr):
     def accept(self, visitor):
         return visitor.visit_Literal_Expr(self)
 
-
 class Variable(Expr):
     def __init__(self, name):
         self.name = name
@@ -27,10 +24,10 @@ class Variable(Expr):
     def accept(self, visitor):
         return visitor.visit_Variable_Expr(self)
 
-
-class ListExpr(Expr):
+class List(Expr):
     def __init__(self, elements):
         self.elements = elements
 
     def accept(self, visitor):
-        return visitor.visit_ListExpr_Expr(self)
+        return visitor.visit_List_Expr(self)
+

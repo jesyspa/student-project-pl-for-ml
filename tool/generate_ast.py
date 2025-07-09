@@ -12,7 +12,7 @@ def main():
     define_ast(output_dir, "Expr", [
         "Literal  : value",
         "Variable : name",
-        "ListExpr    : elements"
+        "List     : elements"
     ])
 
 
