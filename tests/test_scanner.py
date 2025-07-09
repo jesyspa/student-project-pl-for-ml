@@ -72,14 +72,7 @@ class TestScanner(unittest.TestCase):
 
     def test_multiple_next_token_calls(self):
         scanner = Scanner("(foo 123)")
-        tokens = []
-
-        while not scanner.is_at_end():
-            token = scanner.next_token()
-            if token:
-                tokens.append(token)
-
-        tokens.append(scanner.make_token(TokenType.EOF))
+        tokens = scanner.scan_tokens()
 
         expected_types = [
             TokenType.LEFT_PAREN,
