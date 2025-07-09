@@ -21,14 +21,14 @@ def define_ast(output_dir, base_name, types):
     with open(path, "w") as f:
         f.write(f"class {base_name}:\n")
         f.write("    def accept(self, visitor):\n")
-        f.write("        raise NotImplementedError()\n\n")
+        f.write("        raise NotImplementedError()\n\n\n")
 
         f.write(f"class {base_name}Visitor:\n")
         for type_def in types:
             class_name = type_def.split(":")[0].strip()
             f.write(f"    def visit_{class_name}_{base_name}(self, {base_name.lower()}):\n")
             f.write("        pass\n")
-        f.write("\n")
+        f.write("\n\n")
 
         for type_def in types:
             class_name, fields = [part.strip() for part in type_def.split(":")]
@@ -40,7 +40,7 @@ def define_ast(output_dir, base_name, types):
                 f.write(f"        self.{field} = {field}\n")
             f.write("\n")
             f.write(f"    def accept(self, visitor):\n")
-            f.write(f"        return visitor.visit_{class_name}_{base_name}(self)\n\n")
+            f.write(f"        return visitor.visit_{class_name}_{base_name}(self)\n\n\n")
 
 
 if __name__ == "__main__":
