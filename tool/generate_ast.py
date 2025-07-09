@@ -15,15 +15,6 @@ def main():
         "ListExpr    : elements"
     ])
 
-    define_ast(output_dir, "Stmt", [
-        "Expression : expression",
-        "Function   : name, params, body",
-        "If         : condition, then_branch, else_branch",
-        "Print      : expression",
-        "Return     : keyword, value",
-        "While      : condition, body"
-    ])
-
 
 def define_ast(output_dir, base_name, types):
     path = os.path.join(output_dir, f"{base_name}.py")
