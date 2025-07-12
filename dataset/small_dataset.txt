@@ -1,0 +1,72 @@
+(set x 10)
+(set result (* x (list 1 2 3 4 5 6 7 8 9 10)))
+(if (> 5 x)
+		(set result (* result x))
+)
+
+
+(set myList (list 1 2 3 4 5))
+(print myList)
+
+
+(set a 7)
+(set b 3)
+(set sum (+ a b))
+(print sum)
+
+
+(set nums (list 2 4 6 8))
+(set doubled (* 2 nums))
+(print doubled)
+
+
+(func greet (name)
+	(print (+ "Hello, " name))
+)
+(greet "Aza")
+
+
+(set val 15)
+(if (< val 10)
+	(print "Too small")
+	(print "Big enough")
+)
+
+
+(set x 4)
+(set y 5)
+(set area (* x y))
+(print area)
+
+
+(set count 0)
+(set limit 5)
+(if (< count limit)
+	(set count (+ count 1))
+)
+
+
+(set numbers (list 10 20 30 40 50))
+(set first (+ 1 (list 1 2 3)))
+(print first)
+
+
+(func add (a b)
+	(+ a b)
+)
+(set result (add 3 4))
+(print result)
+
+
+(set flag true)
+(if flag
+	(print "Flag is set")
+	(print "Flag is not set")
+)
+
+
+(set message "Result is:")
+(set value 42)
+(print (+ message value))
+
+
