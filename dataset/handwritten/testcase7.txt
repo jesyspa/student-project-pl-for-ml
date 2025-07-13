@@ -1,0 +1,4 @@
+(set x 4)
+(set y 5)
+(set area (* x y))
+(print area)
