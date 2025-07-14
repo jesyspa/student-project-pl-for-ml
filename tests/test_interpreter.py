@@ -21,14 +21,14 @@ class InterpreterTest(unittest.TestCase):
 
     def test_set_variable(self):
         result = self.run_code("""
-            (set x 42)
+            (define x 42)
             x
         """)
         self.assertEqual(result, 42)
 
     def test_update_variable(self):
         result = self.run_code("""
-            (set x 1)
+            (define x 1)
             (set x 99)
             x
         """)
@@ -36,7 +36,7 @@ class InterpreterTest(unittest.TestCase):
 
     def test_variable_shadowing(self):
         result = self.run_code("""
-            (set x 10)
+            (define x 10)
             (func f (x) (+ x 1))
             (f 5)
         """)
@@ -73,9 +73,9 @@ class InterpreterTest(unittest.TestCase):
 
     def test_lambda_closure(self):
         result = self.run_code("""
-            (set x 100)
-            (set make_adder (lambda (y) (lambda (z) (+ x y z))))
-            (set add_all (make_adder 5))
+            (define x 100)
+            (define make_adder (lambda (y) (lambda (z) (+ x y z))))
+            (define add_all (make_adder 5))
             (add_all 2)
         """)
         self.assertEqual(result, 107)
@@ -86,14 +86,14 @@ class InterpreterTest(unittest.TestCase):
 
     def test_get_from_list(self):
         result = self.run_code("""
-            (set items (list 10 20 30))
+            (define items (list 10 20 30))
             (get items 1)
         """)
         self.assertEqual(result, 20)
 
     def test_length_of_list(self):
         result = self.run_code("""
-            (set items (list 5 6 7 8))
+            (define items (list 5 6 7 8))
             (length items)
         """)
         self.assertEqual(result, 4)
@@ -140,16 +140,44 @@ class InterpreterTest(unittest.TestCase):
 
     def test_true_and_false(self):
         result = self.run_code("""
-            (set x true)
+            (define x true)
             (if x 123 456)
         """)
         self.assertEqual(result, 123)
 
         result = self.run_code("""
-            (set x false)
+            (define x false)
             (if x 123 456)
         """)
         self.assertEqual(result, 456)
+
+    def test_lambda_counter(self):
+        result = self.run_code("""
+            (define make-counter
+              (lambda ()
+                (begin
+                  (define count 0)
+                  (lambda ()
+                    (begin
+                      (set count (+ count 1))
+                      count)))))
+
+            (define c (make-counter))
+            (c)
+            (c)
+            (c)
+        """)
+        self.assertEqual(result, 3)
+
+    def test_compare_list_with_number(self):
+        result = self.run_code("(= (list 1 2 3) 3)")
+        self.assertEqual(result, [False, False, True])
+
+        result = self.run_code("(< (list 1 2 3) 5)")
+        self.assertEqual(result, [True, True, True])
+
+        result = self.run_code("(> 2 (list 1 3 2))")
+        self.assertEqual(result, [True, False, False])
 
 
 if __name__ == "__main__":
