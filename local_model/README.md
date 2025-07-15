@@ -7,7 +7,7 @@ The current version loads the model and accepts interactive input from the termi
    pip install -r requirements.txt
    
 3. Run the script using:
-    python Codellama/local_test.py
+    python local_model/local_test.py
   This script loads the tokenizer and model then runs the model on your input and print the result
 
    Example input:
