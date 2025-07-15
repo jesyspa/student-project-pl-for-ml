@@ -179,6 +179,53 @@ class InterpreterTest(unittest.TestCase):
         result = self.run_code("(> 2 (list 1 3 2))")
         self.assertEqual(result, [True, False, False])
 
+    def test_lambda_const_function(self):
+        result = self.run_code("""
+            (func const (x) (lambda (y) x))
+            (define x 5)
+            ((const 3) 7)
+        """)
+        self.assertEqual(result, 3)
+
+    def test_head_function(self):
+        result = self.run_code("""
+            (head (list 10 23 2))
+        """)
+        self.assertEqual(result, 10)
+
+    def test_tail_function(self):
+        result = self.run_code("""
+            (tail (list 1 2 3 4))
+        """)
+        self.assertEqual(result, [2, 3, 4])
+
+    def test_append_function(self):
+        result = self.run_code("""
+            (define a (list 1 2))
+            (define b (list 3 4))
+            (append a b)
+        """)
+        self.assertEqual(result, [1, 2, 3, 4])
+
+    def test_reverse_function(self):
+        result = self.run_code("""
+            (reverse (list "a" "b" "c"))
+        """)
+        self.assertEqual(result, ["c", "b", "a"])
+
+    def test_cons_function(self):
+        result = self.run_code("""
+            (push 1 (list 2 3))
+        """)
+        self.assertEqual(result, [1, 2, 3])
+
+    def test_empty_function(self):
+        result1 = self.run_code("(empty? (list))")
+        self.assertTrue(result1)
+
+        result2 = self.run_code("(empty? (list 1 2 3))")
+        self.assertFalse(result2)
+
 
 if __name__ == "__main__":
     unittest.main()
