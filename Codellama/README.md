@@ -1,5 +1,8 @@
-# Local Test of the Model
+# Local Setup and Fine-Tuning Base
+This module sets up a local instance of the CodeLlama 7B Instruct model using Hugging Face transformers.
+It is intended as a base for future fine-tuning using LoRA (Low-Rank Adaptation) of the model.
 
+The current version loads the model and accepts interactive input from the terminal.
 1. Install the required packages:
    pip install -r requirements.txt
    
