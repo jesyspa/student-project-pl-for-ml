@@ -1,0 +1,3 @@
+(set message "Result is:")
+(set value 42)
+(print (+ message value))

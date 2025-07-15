@@ -1,0 +1,4 @@
+(set a 7)
+(set b 3)
+(set sum (+ a b))
+(print sum)
