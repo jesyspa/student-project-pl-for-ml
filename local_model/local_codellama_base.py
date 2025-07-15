@@ -8,7 +8,6 @@ def generator():
         torch_dtype=torch.float16,
         device_map="auto"
     )
-
     prompt = f"{input('You: ')}\n"
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 
