@@ -1,5 +1,0 @@
-(set val 15)
-(if (< val 10)
-	(print "Too small")
-	(print "Big enough")
-)
