@@ -20,6 +20,7 @@ class TestHandwrittenExamples(unittest.TestCase):
             "boolean-if-condition.txt",
             "string-number-concat.txt"
         ]
+
         for test in tests:
             path = os.path.join(folder, test)
             with self.subTest(testcase=test):
