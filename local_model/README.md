@@ -6,7 +6,7 @@ The current version loads the model and accepts interactive input from the termi
 1. Install the required packages:
    pip install -r requirements.txt
    
-3. Run the script using:
+2. Run the script using:
     python local_model/local_test.py
   This script loads the tokenizer and model then runs the model on your input and print the result
 
