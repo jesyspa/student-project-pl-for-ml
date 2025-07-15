@@ -189,6 +189,44 @@ class Interpreter:
                         result = self.evaluate(expr_, env)
                     return result
 
+                elif name == "head":
+                    lst = self.evaluate(args[0], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError(f"'head' expects a list, got {type(lst)}")
+                    return lst[0] if lst else None
+
+                elif name == "tail":
+                    lst = self.evaluate(args[0], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError(f"'tail' expects a list, got {type(lst)}")
+                    return lst[1:] if len(lst) > 0 else []
+
+                elif name == "append":
+                    lst1 = self.evaluate(args[0], env)
+                    lst2 = self.evaluate(args[1], env)
+                    if not isinstance(lst1, list) or not isinstance(lst2, list):
+                        raise RuntimeError("'append' expects two lists")
+                    return lst1 + lst2
+
+                elif name == "reverse":
+                    lst = self.evaluate(args[0], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError("'reverse' expects a list")
+                    return list(reversed(lst))
+
+                elif name == "push":
+                    element = self.evaluate(args[0], env)
+                    lst = self.evaluate(args[1], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError("'push' expects a list as the second argument")
+                    return [element] + lst
+
+                elif name == "empty?":
+                    lst = self.evaluate(args[0], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError("'empty?' expects a list")
+                    return len(lst) == 0
+
             func = self.evaluate(head, env)
             evaluated_args = [self.evaluate(arg, env) for arg in args]
             return func(*evaluated_args)
