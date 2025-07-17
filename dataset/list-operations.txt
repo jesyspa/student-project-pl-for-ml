@@ -2,4 +2,3 @@
 (define second (list 1 2 3 4 5))
 (define first (+ 1 numbers))
 (print first)
-(print (+ first second)
