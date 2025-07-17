@@ -8,7 +8,7 @@ to improve (ML-based) code generation.
 Make sure you have Python 3.11 or higher installed.
 
 2. Install Dependencies
-The project doesn’t need any extra libraries, except pytest for running tests.
+The project does not need any extra libraries, except pytest for running tests.
 
 ```bash
 pip install pytest
@@ -37,7 +37,7 @@ pytest tests/test_scanner.py
 
 3. Click “Run 'pytest in tests'”
 
-4. Or click the green ▶️ next to a test function
+4. Or click the green ▶ next to a test function
 
 ## Interpreter
 ### Arithmetic operation rules
