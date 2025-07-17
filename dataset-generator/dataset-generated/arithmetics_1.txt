@@ -1,0 +1,4 @@
+(define m 83)
+(define y 70)
+(define a (* m y))
+(print a)
