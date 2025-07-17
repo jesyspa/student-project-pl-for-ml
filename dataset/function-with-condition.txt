@@ -1,0 +1,8 @@
+(define count 0)
+(define limit 5)
+(func limit_reacher ()
+    (if (< count limit)
+        (print "Limit is not reached")
+        (print "Limit is reached")
+    )
+)

@@ -1,4 +1,4 @@
-(set val 15)
+(define val 15)
 (if (< val 10)
 	(print "Too small")
 	(print "Big enough")

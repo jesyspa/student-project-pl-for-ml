@@ -1,4 +1,4 @@
-(set x 4)
-(set y 5)
-(set area (* x y))
+(define x 4)
+(define y 5)
+(define area (* x y))
 (print area)

@@ -1,5 +1,0 @@
-(set count 0)
-(set limit 5)
-(if (< count limit)
-    (set count (+ count 1))
-)

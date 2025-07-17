@@ -1,3 +1,0 @@
-(set numbers (list 10 20 30 40 50))
-(set first (+ 1 numbers))
-(print first)

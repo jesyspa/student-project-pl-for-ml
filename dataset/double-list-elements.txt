@@ -1,3 +1,2 @@
-(set nums (list 2 4 6 8))
-(set doubled (* 2 nums))
-(print doubled)
+(define nums (list 2 4 6 8))
+(print (* 2 nums))

@@ -1,4 +1,4 @@
-(set a 7)
-(set b 3)
-(set sum (+ a b))
+(define a 7)
+(define b 3)
+(define sum (+ a b))
 (print sum)

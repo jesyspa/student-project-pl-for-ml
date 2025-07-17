@@ -1,4 +1,4 @@
-(set flag true)
+(define flag true)
 (if flag
 	(print "Flag is set")
 	(print "Flag is not set")
