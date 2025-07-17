@@ -1,0 +1,6 @@
+(define VAR1 NUM1)
+(define VAR2 NUM2)
+(if (COND VAR1 VAR2)
+	(print "VAR1 COND VAR2")
+	(print "VAR2 COND VAR1")
+)
