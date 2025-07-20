@@ -138,6 +138,10 @@ class InterpreterTest(unittest.TestCase):
         result = self.run_code("(/ (list 20 40 60) 2)")
         self.assertEqual(result, [10.0, 20.0, 30.0])
 
+    def test_div_list_and_list(self):
+        result = self.run_code("(/ (list 1 2 3) (list 1 2 3))")
+        self.assertEqual(result, [1, 1, 1])
+
     def test_true_and_false(self):
         result = self.run_code("""
             (define x true)
