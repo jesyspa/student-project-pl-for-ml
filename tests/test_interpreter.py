@@ -80,64 +80,6 @@ class InterpreterTest(unittest.TestCase):
         """)
         self.assertEqual(result, 107)
 
-    def test_list_creation(self):
-        result = self.run_code("(list 1 2 3)")
-        self.assertEqual(result, [1, 2, 3])
-
-    def test_get_from_list(self):
-        result = self.run_code("""
-            (define items (list 10 20 30))
-            (get items 1)
-        """)
-        self.assertEqual(result, 20)
-
-    def test_length_of_list(self):
-        result = self.run_code("""
-            (define items (list 5 6 7 8))
-            (length items)
-        """)
-        self.assertEqual(result, 4)
-
-    def test_add_string_and_number(self):
-        result = self.run_code('( + "Answer: " 42 )')
-        self.assertEqual(result, "Answer: 42")
-
-    def test_add_number_and_list(self):
-        result = self.run_code("""
-            (+ (list 1 2 3) 1)
-        """)
-        self.assertEqual(result, [2, 3, 4])
-
-    def test_add_list_and_number_reverse(self):
-        result = self.run_code("""
-            (+ 10 (list 1 2 3))
-        """)
-        self.assertEqual(result, [11, 12, 13])
-
-    def test_subtract_list_and_number(self):
-        result = self.run_code("(- (list 10 20 30) 5)")
-        self.assertEqual(result, [5, 15, 25])
-
-    def test_subtract_number_and_list(self):
-        result = self.run_code("(- 100 (list 10 20 30))")
-        self.assertEqual(result, [90, 80, 70])
-
-    def test_mult_list_and_number(self):
-        result = self.run_code("(* (list 1 2 3) 3)")
-        self.assertEqual(result, [3, 6, 9])
-
-    def test_mult_number_and_list(self):
-        result = self.run_code("(* 2 (list 10 20))")
-        self.assertEqual(result, [20, 40])
-
-    def test_div_number_and_list(self):
-        result = self.run_code("(/ 100 (list 2 4 5))")
-        self.assertEqual(result, [50.0, 25.0, 20.0])
-
-    def test_div_list_and_number(self):
-        result = self.run_code("(/ (list 20 40 60) 2)")
-        self.assertEqual(result, [10.0, 20.0, 30.0])
-
     def test_true_and_false(self):
         result = self.run_code("""
             (define x true)
@@ -169,16 +111,6 @@ class InterpreterTest(unittest.TestCase):
         """)
         self.assertEqual(result, 3)
 
-    def test_compare_list_with_number(self):
-        result = self.run_code("(= (list 1 2 3) 3)")
-        self.assertEqual(result, [False, False, True])
-
-        result = self.run_code("(< (list 1 2 3) 5)")
-        self.assertEqual(result, [True, True, True])
-
-        result = self.run_code("(> 2 (list 1 3 2))")
-        self.assertEqual(result, [True, False, False])
-
     def test_lambda_const_function(self):
         result = self.run_code("""
             (func const (x) (lambda (y) x))
@@ -186,45 +118,6 @@ class InterpreterTest(unittest.TestCase):
             ((const 3) 7)
         """)
         self.assertEqual(result, 3)
-
-    def test_head_function(self):
-        result = self.run_code("""
-            (head (list 10 23 2))
-        """)
-        self.assertEqual(result, 10)
-
-    def test_tail_function(self):
-        result = self.run_code("""
-            (tail (list 1 2 3 4))
-        """)
-        self.assertEqual(result, [2, 3, 4])
-
-    def test_append_function(self):
-        result = self.run_code("""
-            (define a (list 1 2))
-            (define b (list 3 4))
-            (append a b)
-        """)
-        self.assertEqual(result, [1, 2, 3, 4])
-
-    def test_reverse_function(self):
-        result = self.run_code("""
-            (reverse (list "a" "b" "c"))
-        """)
-        self.assertEqual(result, ["c", "b", "a"])
-
-    def test_cons_function(self):
-        result = self.run_code("""
-            (push 1 (list 2 3))
-        """)
-        self.assertEqual(result, [1, 2, 3])
-
-    def test_empty_function(self):
-        result1 = self.run_code("(empty? (list))")
-        self.assertTrue(result1)
-
-        result2 = self.run_code("(empty? (list 1 2 3))")
-        self.assertFalse(result2)
 
 
 if __name__ == "__main__":

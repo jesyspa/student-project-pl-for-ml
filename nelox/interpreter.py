@@ -37,34 +37,8 @@ class Environment:
             raise RuntimeError(f"Undefined variable '{name}'")
 
 
-def _builtin_get(lst, index):
-    if not isinstance(lst, list):
-        raise RuntimeError(f"'get': expected list, got {type(lst)}")
-    if not isinstance(index, int):
-        raise RuntimeError(f"'get': expected integer index, got {type(index)}")
-    try:
-        return lst[index]
-    except IndexError:
-        raise RuntimeError("'get': index out of bounds")
-
-
-def _builtin_length(lst):
-    if not isinstance(lst, list):
-        raise RuntimeError(f"'length': expected list, got {type(lst)}")
-    return len(lst)
-
-
 def _comparison(op):
-    def compare(a, b):
-        if isinstance(a, list) and isinstance(b, list):
-            return [op(x, y) for x, y in zip(a, b)]
-        elif isinstance(a, list):
-            return [op(x, b) for x in a]
-        elif isinstance(b, list):
-            return [op(a, y) for y in b]
-        else:
-            return op(a, b)
-    return compare
+    return op
 
 
 def _apply(op, *args):
@@ -73,26 +47,11 @@ def _apply(op, *args):
 
     result = args[0]
     for arg in args[1:]:
-        if isinstance(result, list) and isinstance(arg, (int, float)):
-            result = [op(x, arg) for x in result]
-        elif isinstance(result, (int, float)) and isinstance(arg, list):
-            result = [op(result, x) for x in arg]
-        elif isinstance(result, list) and isinstance(arg, list):
-            result = [op(x, y) for x, y in zip(result, arg)]
-        elif isinstance(result, (int, float)) and isinstance(arg, (int, float)):
-            result = op(result, arg)
-        else:
-            if op == operator.add:
-                result = str(result) + str(arg)
-            else:
-                raise RuntimeError(f"Unsupported operands for {op}: {type(result)} and {type(arg)}")
+        result = op(result, arg)
     return result
 
 
 def _define_builtins(env):
-    env.define("list", lambda *args: list(args))
-    env.define("get", _builtin_get)
-    env.define("length", _builtin_length)
     env.define("true", True)
     env.define("false", False)
     env.define("+", lambda *args: _apply(operator.add, *args))
@@ -188,44 +147,6 @@ class Interpreter:
                     for expr_ in args:
                         result = self.evaluate(expr_, env)
                     return result
-
-                elif name == "head":
-                    lst = self.evaluate(args[0], env)
-                    if not isinstance(lst, list):
-                        raise RuntimeError(f"'head' expects a list, got {type(lst)}")
-                    return lst[0] if lst else None
-
-                elif name == "tail":
-                    lst = self.evaluate(args[0], env)
-                    if not isinstance(lst, list):
-                        raise RuntimeError(f"'tail' expects a list, got {type(lst)}")
-                    return lst[1:] if len(lst) > 0 else []
-
-                elif name == "append":
-                    lst1 = self.evaluate(args[0], env)
-                    lst2 = self.evaluate(args[1], env)
-                    if not isinstance(lst1, list) or not isinstance(lst2, list):
-                        raise RuntimeError("'append' expects two lists")
-                    return lst1 + lst2
-
-                elif name == "reverse":
-                    lst = self.evaluate(args[0], env)
-                    if not isinstance(lst, list):
-                        raise RuntimeError("'reverse' expects a list")
-                    return list(reversed(lst))
-
-                elif name == "push":
-                    element = self.evaluate(args[0], env)
-                    lst = self.evaluate(args[1], env)
-                    if not isinstance(lst, list):
-                        raise RuntimeError("'push' expects a list as the second argument")
-                    return [element] + lst
-
-                elif name == "empty?":
-                    lst = self.evaluate(args[0], env)
-                    if not isinstance(lst, list):
-                        raise RuntimeError("'empty?' expects a list")
-                    return len(lst) == 0
 
             func = self.evaluate(head, env)
             evaluated_args = [self.evaluate(arg, env) for arg in args]
