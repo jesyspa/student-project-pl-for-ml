@@ -131,7 +131,12 @@ class Interpreter:
 
                 elif name == "lambda":
                     param_tokens = args[0].elements
-                    body = args[1]
+                    if len(args) > 2:
+                        body = List([
+                                        Variable(Token(TokenType.IDENTIFIER, "begin", None, 0))
+                                    ] + args[1:])
+                    else:
+                        body = args[1]
                     param_names = [tok.name.lexeme for tok in param_tokens]
 
                     def fn(*call_args):
@@ -143,10 +148,7 @@ class Interpreter:
                     return fn
 
                 elif name == "begin":
-                    result = None
-                    for expr_ in args:
-                        result = self.evaluate(expr_, env)
-                    return result
+                    return self.interpret(args)
 
             func = self.evaluate(head, env)
             evaluated_args = [self.evaluate(arg, env) for arg in args]

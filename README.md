@@ -40,17 +40,6 @@ pytest tests/test_scanner.py
 4. Or click the green ▶ next to a test function
 
 ## Interpreter
-### Arithmetic operation rules
-```
-1. scalar + scalar -> standard arithmetic (e.g., 2 + 3 = 5)
-2. list + scalar  -> elementwise (e.g., [1, 2] + 3 = [4, 5])
-3. scalar + list  -> elementwise (e.g., 3 + [1, 2] = [4, 5])
-4. list + list    -> elemetwise  (e.g., [1, 1]+[1, 1]=[2, 2])
-
-~ same rules apply for -, *, /
-~ if operands are not numbers or lists -> convert to a string and merge (in case of '+')
-```
-
 
 ### Principles for List Handling
 
