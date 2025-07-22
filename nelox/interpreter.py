@@ -131,12 +131,7 @@ class Interpreter:
 
                 elif name == "lambda":
                     param_tokens = args[0].elements
-                    if len(args) > 2:
-                        body = List([
-                                        Variable(Token(TokenType.IDENTIFIER, "begin", None, 0))
-                                    ] + args[1:])
-                    else:
-                        body = args[1]
+                    body = args[1]
                     param_names = [tok.name.lexeme for tok in param_tokens]
 
                     def fn(*call_args):
