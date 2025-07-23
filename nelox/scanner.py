@@ -60,7 +60,7 @@ class Scanner:
                 return self.make_token(TokenType.LEFT_PAREN)
             elif c == ')':
                 return self.make_token(TokenType.RIGHT_PAREN)
-            elif c in "+-*/<>":
+            elif c in "+-*/<>=!":
                 return self.make_token(TokenType.IDENTIFIER)
             elif c.isdigit():
                 return self.number()
