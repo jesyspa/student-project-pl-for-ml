@@ -145,6 +145,15 @@ class Interpreter:
                 elif name == "begin":
                     return self.interpret(args)
 
+                elif name == "read-int":
+                    var_name = args[0].name.lexeme
+                    try:
+                        value = int(input())
+                    except ValueError:
+                        raise RuntimeError("'read-int' requires an integer number")
+                    env.set(var_name, value)
+                    return value
+
             func = self.evaluate(head, env)
             evaluated_args = [self.evaluate(arg, env) for arg in args]
             return func(*evaluated_args)
