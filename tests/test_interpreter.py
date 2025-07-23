@@ -1,4 +1,6 @@
 import unittest
+import io
+import sys
 from nelox.scanner import Scanner
 from nelox.parser import Parser
 from nelox.interpreter import Interpreter
@@ -12,6 +14,14 @@ class InterpreterTest(unittest.TestCase):
         expressions = parser.parse()
         interpreter = Interpreter()
         return interpreter.interpret(expressions)
+
+    def run_code_with_input(self, source, input_data):
+        original_stdin = sys.stdin
+        try:
+            sys.stdin = io.StringIO(input_data)
+            return self.run_code(source)
+        finally:
+            sys.stdin = original_stdin
 
     def test_simple_arithmetic(self):
         self.assertEqual(self.run_code("(+ 1 2)"), 3)
@@ -118,6 +128,15 @@ class InterpreterTest(unittest.TestCase):
             ((const 3) 7)
         """)
         self.assertEqual(result, 3)
+
+    def test_read_int(self):
+        code = """
+            (define x 0)
+            (read-int x)
+            x
+        """
+        result = self.run_code_with_input(code, "12\n")
+        self.assertEqual(result, 12)
 
 
 if __name__ == "__main__":
