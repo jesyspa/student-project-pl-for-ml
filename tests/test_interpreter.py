@@ -153,9 +153,15 @@ class InterpreterTest(unittest.TestCase):
         self.assertEqual(self.run_code("(mod 20 5)"), 0)
 
     def test_not_equal_operator(self):
-        self.assertEqual(self.run_code("(not 5 3)"), True)
-        self.assertEqual(self.run_code("(not 4 4)"), False)
-        self.assertEqual(self.run_code("(not (+ 1 2) 4)"), True)
+        self.assertEqual(self.run_code("(not-eq 5 3)"), True)
+        self.assertEqual(self.run_code("(not-eq 4 4)"), False)
+        self.assertEqual(self.run_code("(not-eq (+ 1 2) 4)"), True)
+
+    def test_logical_not(self):
+        self.assertEqual(self.run_code("(not true)"), False)
+        self.assertEqual(self.run_code("(not false)"), True)
+        self.assertEqual(self.run_code("(not 0)"), True)
+        self.assertEqual(self.run_code("(not 1)"), False)
 
     def test_integer_division(self):
         self.assertEqual(self.run_code("(div 7 2)"), 3)
@@ -169,6 +175,7 @@ class InterpreterTest(unittest.TestCase):
         self.assertEqual(self.run_code("(or false (or false true))"), True)
         self.assertEqual(self.run_code("(and (> 3 2) (< 5 10))"), True)
         self.assertEqual(self.run_code("(or (= 1 2) (> 10 3))"), True)
+        self.assertEqual(self.run_code("(and false false true)"), False)
 
 
 if __name__ == "__main__":

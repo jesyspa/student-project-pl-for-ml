@@ -65,7 +65,8 @@ def _define_builtins(env):
     env.define(">=", _comparison(operator.ge))
     env.define("<=", _comparison(operator.le))
     env.define("=", _comparison(operator.eq))
-    env.define("not", lambda a, b: a != b)
+    env.define("not", lambda x: not x)
+    env.define("not-eq", lambda a, b: a != b)
     env.define("print", lambda *args: print(*args))
 
 
@@ -166,10 +167,10 @@ class Interpreter:
                     return result
 
                 elif name == "and":
-                    left = self.evaluate(args[0], env)
-                    if not left:
-                        return False
-                    return self.evaluate(args[1], env)
+                    for arg in args:
+                        if not self.evaluate(arg, env):
+                            return False
+                    return True
 
                 elif name == "or":
                     left = self.evaluate(args[0], env)
