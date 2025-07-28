@@ -62,7 +62,7 @@ class InterpreterTest(unittest.TestCase):
 
     def test_if_false_branch(self):
         result = self.run_code("""
-            (if (< 2 1)
+            (if (<= 2 1)
                 1
                 0)
         """)
@@ -152,10 +152,10 @@ class InterpreterTest(unittest.TestCase):
         self.assertEqual(self.run_code("(mod 10 3)"), 1)
         self.assertEqual(self.run_code("(mod 20 5)"), 0)
 
-    def test_not_equal_operator(self):
-        self.assertEqual(self.run_code("(not-eq 5 3)"), True)
-        self.assertEqual(self.run_code("(not-eq 4 4)"), False)
-        self.assertEqual(self.run_code("(not-eq (+ 1 2) 4)"), True)
+    def test_not_not_equal_operator(self):
+        self.assertEqual(self.run_code("(!= 5 3)"), True)
+        self.assertEqual(self.run_code("(!= 4 4)"), False)
+        self.assertEqual(self.run_code("(!= (+ 1 2) 4)"), True)
 
     def test_logical_not(self):
         self.assertEqual(self.run_code("(not true)"), False)

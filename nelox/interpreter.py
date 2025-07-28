@@ -51,6 +51,12 @@ def _apply(op, *args):
     return result
 
 
+def _not_equal(*args):
+    if len(args) != 2:
+        raise RuntimeError("'!=' expects exactly 2 arguments")
+    return args[0] != args[1]
+
+
 def _define_builtins(env):
     env.define("true", True)
     env.define("false", False)
@@ -66,7 +72,7 @@ def _define_builtins(env):
     env.define("<=", _comparison(operator.le))
     env.define("=", _comparison(operator.eq))
     env.define("not", lambda x: not x)
-    env.define("not-eq", lambda a, b: a != b)
+    env.define("!=", _comparison(operator.ne))
     env.define("print", lambda *args: print(*args))
 
 
@@ -173,10 +179,10 @@ class Interpreter:
                     return True
 
                 elif name == "or":
-                    left = self.evaluate(args[0], env)
-                    if left:
-                        return True
-                    return self.evaluate(args[1], env)
+                    for arg in args:
+                        if self.evaluate(arg, env):
+                            return True
+                    return False
 
             func = self.evaluate(head, env)
             evaluated_args = [self.evaluate(arg, env) for arg in args]
