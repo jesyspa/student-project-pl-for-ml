@@ -107,6 +107,22 @@ class TestScanner(unittest.TestCase):
 
         assert tokens[5].type == TokenType.EOF
 
+    def test_sign(self):
+        source = '(!= 2 3)'
+        tokens = scan_all_tokens(source)
+
+        expected_types = [
+            TokenType.LEFT_PAREN,
+            TokenType.IDENTIFIER,
+            TokenType.NUMBER,
+            TokenType.NUMBER,
+            TokenType.RIGHT_PAREN,
+            TokenType.EOF
+        ]
+
+        actual_types = [token.type for token in tokens]
+        self.assertEqual(actual_types, expected_types)
+
 
 if __name__ == '__main__':
     unittest.main()

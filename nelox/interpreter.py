@@ -51,6 +51,12 @@ def _apply(op, *args):
     return result
 
 
+def _not_equal(*args):
+    if len(args) != 2:
+        raise RuntimeError("'!=' expects exactly 2 arguments")
+    return args[0] != args[1]
+
+
 def _define_builtins(env):
     env.define("true", True)
     env.define("false", False)
@@ -58,11 +64,15 @@ def _define_builtins(env):
     env.define("-", lambda *args: _apply(operator.sub, *args))
     env.define("*", lambda *args: _apply(operator.mul, *args))
     env.define("/", lambda *args: _apply(operator.truediv, *args))
+    env.define("mod", lambda a, b: operator.mod(a, b))
+    env.define("div", lambda *args: _apply(operator.floordiv, *args))
     env.define(">", _comparison(operator.gt))
     env.define("<", _comparison(operator.lt))
     env.define(">=", _comparison(operator.ge))
     env.define("<=", _comparison(operator.le))
     env.define("=", _comparison(operator.eq))
+    env.define("not", lambda x: not x)
+    env.define("!=", _comparison(operator.ne))
     env.define("print", lambda *args: print(*args))
 
 
@@ -153,6 +163,26 @@ class Interpreter:
                         raise RuntimeError("'read-int' requires an integer number")
                     env.set(var_name, value)
                     return value
+
+                elif name == "while":
+                    condition = args[0]
+                    body = args[1]
+                    result = None
+                    while self.evaluate(condition, env):
+                        result = self.evaluate(body, env)
+                    return result
+
+                elif name == "and":
+                    for arg in args:
+                        if not self.evaluate(arg, env):
+                            return False
+                    return True
+
+                elif name == "or":
+                    for arg in args:
+                        if self.evaluate(arg, env):
+                            return True
+                    return False
 
             func = self.evaluate(head, env)
             evaluated_args = [self.evaluate(arg, env) for arg in args]
