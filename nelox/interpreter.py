@@ -58,11 +58,14 @@ def _define_builtins(env):
     env.define("-", lambda *args: _apply(operator.sub, *args))
     env.define("*", lambda *args: _apply(operator.mul, *args))
     env.define("/", lambda *args: _apply(operator.truediv, *args))
+    env.define("mod", lambda a, b: operator.mod(a, b))
+    env.define("div", lambda *args: _apply(operator.floordiv, *args))
     env.define(">", _comparison(operator.gt))
     env.define("<", _comparison(operator.lt))
     env.define(">=", _comparison(operator.ge))
     env.define("<=", _comparison(operator.le))
     env.define("=", _comparison(operator.eq))
+    env.define("not", lambda a, b: a != b)
     env.define("print", lambda *args: print(*args))
 
 
@@ -153,6 +156,26 @@ class Interpreter:
                         raise RuntimeError("'read-int' requires an integer number")
                     env.set(var_name, value)
                     return value
+
+                elif name == "while":
+                    condition = args[0]
+                    body = args[1]
+                    result = None
+                    while self.evaluate(condition, env):
+                        result = self.evaluate(body, env)
+                    return result
+
+                elif name == "and":
+                    left = self.evaluate(args[0], env)
+                    if not left:
+                        return False
+                    return self.evaluate(args[1], env)
+
+                elif name == "or":
+                    left = self.evaluate(args[0], env)
+                    if left:
+                        return True
+                    return self.evaluate(args[1], env)
 
             func = self.evaluate(head, env)
             evaluated_args = [self.evaluate(arg, env) for arg in args]

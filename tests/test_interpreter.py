@@ -138,6 +138,38 @@ class InterpreterTest(unittest.TestCase):
         result = self.run_code_with_input(code, "12\n")
         self.assertEqual(result, 12)
 
+    def test_while_loop(self):
+        code = """
+            (define x 0)
+            (while (< x 5)
+                (set x (+ x 1)))
+            x
+        """
+        result = self.run_code(code)
+        self.assertEqual(result, 5)
+
+    def test_modulus(self):
+        self.assertEqual(self.run_code("(mod 10 3)"), 1)
+        self.assertEqual(self.run_code("(mod 20 5)"), 0)
+
+    def test_not_equal_operator(self):
+        self.assertEqual(self.run_code("(not 5 3)"), True)
+        self.assertEqual(self.run_code("(not 4 4)"), False)
+        self.assertEqual(self.run_code("(not (+ 1 2) 4)"), True)
+
+    def test_integer_division(self):
+        self.assertEqual(self.run_code("(div 7 2)"), 3)
+        self.assertEqual(self.run_code("(div 10 3)"), 3)
+        self.assertEqual(self.run_code("(div 5 5)"), 1)
+
+    def test_logical_and_or(self):
+        self.assertEqual(self.run_code("(and true true)"), True)
+        self.assertEqual(self.run_code("(and true false)"), False)
+        self.assertEqual(self.run_code("(or false true)"), True)
+        self.assertEqual(self.run_code("(or false (or false true))"), True)
+        self.assertEqual(self.run_code("(and (> 3 2) (< 5 10))"), True)
+        self.assertEqual(self.run_code("(or (= 1 2) (> 10 3))"), True)
+
 
 if __name__ == "__main__":
     unittest.main()
