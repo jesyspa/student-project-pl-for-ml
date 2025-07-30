@@ -1,0 +1,5 @@
+(define x 12)
+(print x)
+(define y (+ 76 12))
+(define z 38)
+(print y)

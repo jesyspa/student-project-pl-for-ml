@@ -1,0 +1,8 @@
+(define x 2)
+(define y 12)
+(if (< y 24)
+  (print x)
+  (define z 76)
+)
+(print y)
+(print 1)
