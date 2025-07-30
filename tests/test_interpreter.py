@@ -141,7 +141,7 @@ class InterpreterTest(unittest.TestCase):
     def test_while_loop(self):
         code = """
             (define x 0)
-            (while (< x 5)
+            (while (< x 5) $commenting test
                 (set x (+ x 1)))
             x
         """
@@ -176,6 +176,57 @@ class InterpreterTest(unittest.TestCase):
         self.assertEqual(self.run_code("(and (> 3 2) (< 5 10))"), True)
         self.assertEqual(self.run_code("(or (= 1 2) (> 10 3))"), True)
         self.assertEqual(self.run_code("(and false false true)"), False)
+
+    def test_head(self):
+        self.assertEqual(self.run_code("(head (list 1 2 3))"), 1)
+        self.assertEqual(self.run_code("(head (list))"), None)
+
+    def test_tail(self):
+        self.assertEqual(self.run_code("(tail (list 1 2 3))"), [2, 3])
+        self.assertEqual(self.run_code("(tail (list 1))"), [])
+        self.assertEqual(self.run_code("(tail (list))"), [])
+
+    def test_append_lists(self):
+        self.assertEqual(self.run_code("(append (list 1 2) (list 3 4))"), [1, 2, 3, 4])
+
+    def test_append_strings(self):
+        self.assertEqual(self.run_code('(append "hello" " world")'), "hello world")
+
+    def test_append_type_error(self):
+        with self.assertRaises(RuntimeError):
+            self.run_code('(append (list 1 2) "not a list")')
+
+    def test_reverse(self):
+        self.assertEqual(self.run_code("(reverse (list 1 2 3))"), [3, 2, 1])
+        self.assertEqual(self.run_code("(reverse (list))"), [])
+
+    def test_reverse_type_error(self):
+        with self.assertRaises(RuntimeError):
+            self.run_code('(reverse "not a list")')
+
+    def test_push(self):
+        self.assertEqual(self.run_code("(push 0 (list 1 2 3))"), [0, 1, 2, 3])
+
+    def test_push_type_error(self):
+        with self.assertRaises(RuntimeError):
+            self.run_code('(push 1 "not a list")')
+
+    def test_empty_question(self):
+        self.assertEqual(self.run_code("(empty? (list))"), True)
+        self.assertEqual(self.run_code("(empty? (list 1 2))"), False)
+
+    def test_empty_type_error(self):
+        with self.assertRaises(RuntimeError):
+            self.run_code('(empty? "not a list")')
+
+    def test_read_line(self):
+        code = """
+            (define name "")
+            (read-line name)
+            name
+        """
+        result = self.run_code_with_input(code, "Alice\n")
+        self.assertEqual(result, "Alice")
 
 
 if __name__ == "__main__":

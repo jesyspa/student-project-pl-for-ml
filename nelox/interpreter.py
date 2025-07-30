@@ -37,6 +37,23 @@ class Environment:
             raise RuntimeError(f"Undefined variable '{name}'")
 
 
+def _builtin_get(lst, index):
+    if not isinstance(lst, list):
+        raise RuntimeError(f"'get': expected list, got {type(lst)}")
+    if not isinstance(index, int):
+        raise RuntimeError(f"'get': expected integer index, got {type(index)}")
+    try:
+        return lst[index]
+    except IndexError:
+        raise RuntimeError("'get': index out of bounds")
+
+
+def _builtin_length(lst):
+    if not isinstance(lst, list):
+        raise RuntimeError(f"'length': expected list, got {type(lst)}")
+    return len(lst)
+
+
 def _comparison(op):
     return op
 
@@ -74,6 +91,16 @@ def _define_builtins(env):
     env.define("not", lambda x: not x)
     env.define("!=", _comparison(operator.ne))
     env.define("print", lambda *args: print(*args))
+    env.define("list", lambda *args: list(args))
+    env.define("get", _builtin_get)
+    env.define("length", _builtin_length)
+    env.define("str", lambda *args: str(args))
+    env.define("all-unique", lambda lst: list(set(lst)))
+    env.define("to-list", lambda s: list(s))
+    env.define("to-lower", lambda s: s.lower())
+    env.define("to-upper", lambda s: s.upper())
+    env.define("get-ascii", lambda c: ord(c) if isinstance(c, str) and len(c) == 1 else
+               (_raise := RuntimeError("'get-ascii' expects a single character")) or None)
 
 
 class Interpreter:
@@ -183,6 +210,53 @@ class Interpreter:
                         if self.evaluate(arg, env):
                             return True
                     return False
+
+                elif name == "head":
+                    lst = self.evaluate(args[0], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError(f"'head' expects a list, got {type(lst)}")
+                    return lst[0] if lst else None
+
+                elif name == "tail":
+                    lst = self.evaluate(args[0], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError(f"'tail' expects a list, got {type(lst)}")
+                    return lst[1:] if len(lst) > 0 else []
+
+                elif name == "append":
+                    val1 = self.evaluate(args[0], env)
+                    val2 = self.evaluate(args[1], env)
+                    if isinstance(val1, list) and isinstance(val2, list):
+                        return val1 + val2
+                    elif isinstance(val1, str) and isinstance(val2, str):
+                        return val1 + val2
+                    else:
+                        raise RuntimeError("'append' expects two lists or two strings")
+
+                elif name == "reverse":
+                    lst = self.evaluate(args[0], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError("'reverse' expects a list")
+                    return list(reversed(lst))
+
+                elif name == "push":
+                    element = self.evaluate(args[0], env)
+                    lst = self.evaluate(args[1], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError("'push' expects a list as the second argument")
+                    return [element] + lst
+
+                elif name == "empty?":
+                    lst = self.evaluate(args[0], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError("'empty?' expects a list")
+                    return len(lst) == 0
+
+                elif name == "read-line":
+                    var_name = args[0].name.lexeme
+                    value = input()
+                    env.set(var_name, value)
+                    return value
 
             func = self.evaluate(head, env)
             evaluated_args = [self.evaluate(arg, env) for arg in args]
