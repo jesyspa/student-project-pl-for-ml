@@ -53,6 +53,7 @@ def _builtin_length(lst):
         raise RuntimeError(f"'length': expected list, got {type(lst)}")
     return len(lst)
 
+
 def _comparison(op):
     return op
 
@@ -71,10 +72,9 @@ def _not_equal(*args):
     if len(args) != 2:
         raise RuntimeError("'!=' expects exactly 2 arguments")
     return args[0] != args[1]
- 
-  
-def _define_builtins(env):
 
+
+def _define_builtins(env):
     env.define("true", True)
     env.define("false", False)
     env.define("+", lambda *args: _apply(operator.add, *args))
@@ -94,6 +94,13 @@ def _define_builtins(env):
     env.define("list", lambda *args: list(args))
     env.define("get", _builtin_get)
     env.define("length", _builtin_length)
+    env.define("str", lambda *args: str(args))
+    env.define("all-unique", lambda lst: list(set(lst)))
+    env.define("to-list", lambda s: list(s))
+    env.define("to-lower", lambda s: s.lower())
+    env.define("to-upper", lambda s: s.upper())
+    env.define("get-ascii", lambda c: ord(c) if isinstance(c, str) and len(c) == 1 else
+               (_raise := RuntimeError("'get-ascii' expects a single character")) or None)
 
 
 class Interpreter:
@@ -203,7 +210,7 @@ class Interpreter:
                         if self.evaluate(arg, env):
                             return True
                     return False
-                                
+
                 elif name == "head":
                     lst = self.evaluate(args[0], env)
                     if not isinstance(lst, list):
@@ -217,11 +224,14 @@ class Interpreter:
                     return lst[1:] if len(lst) > 0 else []
 
                 elif name == "append":
-                    lst1 = self.evaluate(args[0], env)
-                    lst2 = self.evaluate(args[1], env)
-                    if not isinstance(lst1, list) or not isinstance(lst2, list):
-                        raise RuntimeError("'append' expects two lists")
-                    return lst1 + lst2
+                    val1 = self.evaluate(args[0], env)
+                    val2 = self.evaluate(args[1], env)
+                    if isinstance(val1, list) and isinstance(val2, list):
+                        return val1 + val2
+                    elif isinstance(val1, str) and isinstance(val2, str):
+                        return val1 + val2
+                    else:
+                        raise RuntimeError("'append' expects two lists or two strings")
 
                 elif name == "reverse":
                     lst = self.evaluate(args[0], env)
@@ -242,6 +252,11 @@ class Interpreter:
                         raise RuntimeError("'empty?' expects a list")
                     return len(lst) == 0
 
+                elif name == "read-line":
+                    var_name = args[0].name.lexeme
+                    value = input()
+                    env.set(var_name, value)
+                    return value
 
             func = self.evaluate(head, env)
             evaluated_args = [self.evaluate(arg, env) for arg in args]
