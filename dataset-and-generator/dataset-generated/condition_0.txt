@@ -1,6 +1,0 @@
-(define v 94)
-(define y 22)
-(if (> v y)
-	(print "v > y")
-	(print "y > v")
-)

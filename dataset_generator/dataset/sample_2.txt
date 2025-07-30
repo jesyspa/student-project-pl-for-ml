@@ -1,0 +1,5 @@
+(define x 49)
+(print x)
+(define y (+ 41 66))
+(print x)
+(print y)

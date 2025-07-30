@@ -1,4 +1,0 @@
-(define VAR1 NUM1)
-(define VAR2 NUM2)
-(define RES (OP VAR1 VAR2))
-(print RES)

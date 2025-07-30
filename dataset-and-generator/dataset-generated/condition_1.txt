@@ -1,6 +1,0 @@
-(define n 74)
-(define b 78)
-(if (< n b)
-	(print "n < b")
-	(print "b < n")
-)

@@ -1,4 +1,0 @@
-(define b 99)
-(define x 81)
-(define x (+ b x))
-(print x)
