@@ -1,8 +1,0 @@
-(define x 54)
-(print x)
-(define y 85)
-(if (> y 16)
-  (print x)
-  (define z 31)
-)
-(print 31)

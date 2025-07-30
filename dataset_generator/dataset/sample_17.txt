@@ -1,8 +1,0 @@
-(define x 2)
-(if (> x 49)
-  (print x)
-  (define y (* 48 65))
-)
-(print x)
-(print x)
-(print x)

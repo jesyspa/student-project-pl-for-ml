@@ -1,5 +1,0 @@
-(define x 30)
-(print x)
-(define y (- 31 9))
-(print x)
-(print x)

@@ -1,8 +1,0 @@
-(define x 6)
-(if (< x 50)
-  (define y 78)
-  (print x)
-)
-(define y 2)
-(define z 63)
-(define a (* 48 x))

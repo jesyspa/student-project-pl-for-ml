@@ -1,5 +1,0 @@
-(define x 23)
-(print x)
-(print x)
-(define y 67)
-(define z (- 67 9))
