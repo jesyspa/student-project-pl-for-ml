@@ -53,18 +53,8 @@ def _builtin_length(lst):
         raise RuntimeError(f"'length': expected list, got {type(lst)}")
     return len(lst)
 
-
 def _comparison(op):
-    def compare(a, b):
-        if isinstance(a, list) and isinstance(b, list):
-            return [op(x, y) for x, y in zip(a, b)]
-        elif isinstance(a, list):
-            return [op(x, b) for x in a]
-        elif isinstance(b, list):
-            return [op(a, y) for y in b]
-        else:
-            return op(a, b)
-    return compare
+    return op
 
 
 def _apply(op, *args):
@@ -73,38 +63,37 @@ def _apply(op, *args):
 
     result = args[0]
     for arg in args[1:]:
-        if isinstance(result, list) and isinstance(arg, (int, float)):
-            result = [op(x, arg) for x in result]
-        elif isinstance(result, (int, float)) and isinstance(arg, list):
-            result = [op(result, x) for x in arg]
-        elif isinstance(result, list) and isinstance(arg, list):
-            result = [op(x, y) for x, y in zip(result, arg)]
-        elif isinstance(result, (int, float)) and isinstance(arg, (int, float)):
-            result = op(result, arg)
-        else:
-            if op == operator.add:
-                result = str(result) + str(arg)
-            else:
-                raise RuntimeError(f"Unsupported operands for {op}: {type(result)} and {type(arg)}")
+        result = op(result, arg)
     return result
 
 
+def _not_equal(*args):
+    if len(args) != 2:
+        raise RuntimeError("'!=' expects exactly 2 arguments")
+    return args[0] != args[1]
+ 
+  
 def _define_builtins(env):
-    env.define("list", lambda *args: list(args))
-    env.define("get", _builtin_get)
-    env.define("length", _builtin_length)
+
     env.define("true", True)
     env.define("false", False)
     env.define("+", lambda *args: _apply(operator.add, *args))
     env.define("-", lambda *args: _apply(operator.sub, *args))
     env.define("*", lambda *args: _apply(operator.mul, *args))
     env.define("/", lambda *args: _apply(operator.truediv, *args))
+    env.define("mod", lambda a, b: operator.mod(a, b))
+    env.define("div", lambda *args: _apply(operator.floordiv, *args))
     env.define(">", _comparison(operator.gt))
     env.define("<", _comparison(operator.lt))
     env.define(">=", _comparison(operator.ge))
     env.define("<=", _comparison(operator.le))
     env.define("=", _comparison(operator.eq))
+    env.define("not", lambda x: not x)
+    env.define("!=", _comparison(operator.ne))
     env.define("print", lambda *args: print(*args))
+    env.define("list", lambda *args: list(args))
+    env.define("get", _builtin_get)
+    env.define("length", _builtin_length)
 
 
 class Interpreter:
@@ -184,11 +173,37 @@ class Interpreter:
                     return fn
 
                 elif name == "begin":
+                    return self.interpret(args)
+
+                elif name == "read-int":
+                    var_name = args[0].name.lexeme
+                    try:
+                        value = int(input())
+                    except ValueError:
+                        raise RuntimeError("'read-int' requires an integer number")
+                    env.set(var_name, value)
+                    return value
+
+                elif name == "while":
+                    condition = args[0]
+                    body = args[1]
                     result = None
-                    for expr_ in args:
-                        result = self.evaluate(expr_, env)
+                    while self.evaluate(condition, env):
+                        result = self.evaluate(body, env)
                     return result
 
+                elif name == "and":
+                    for arg in args:
+                        if not self.evaluate(arg, env):
+                            return False
+                    return True
+
+                elif name == "or":
+                    for arg in args:
+                        if self.evaluate(arg, env):
+                            return True
+                    return False
+                                
                 elif name == "head":
                     lst = self.evaluate(args[0], env)
                     if not isinstance(lst, list):
@@ -226,6 +241,7 @@ class Interpreter:
                     if not isinstance(lst, list):
                         raise RuntimeError("'empty?' expects a list")
                     return len(lst) == 0
+
 
             func = self.evaluate(head, env)
             evaluated_args = [self.evaluate(arg, env) for arg in args]

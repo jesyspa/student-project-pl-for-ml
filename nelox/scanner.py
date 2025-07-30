@@ -34,6 +34,14 @@ class Scanner:
         self.tokens.append(Token(TokenType.EOF, "", None, self.line))
         return self.tokens
 
+    def match(self, expected: str) -> bool:
+        if self.is_source_end():
+            return False
+        if self.source[self.current] != expected:
+            return False
+        self.current += 1
+        return True
+
     def is_source_end(self) -> bool:
         return self.current >= len(self.source)
 
@@ -61,7 +69,7 @@ class Scanner:
             elif c == ')':
                 return self.make_token(TokenType.RIGHT_PAREN)
             elif c in "+-*/<>=!":
-                return self.make_token(TokenType.IDENTIFIER)
+                return self.identifier()
             elif c.isdigit():
                 return self.number()
             elif is_alpha(c):
