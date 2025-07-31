@@ -24,6 +24,18 @@ def generate_expr(depth=0):
     right = generate_expr(depth + 1)
     return f"({op} {left} {right})"
 
+#function to prevent usage of a variable during its definition
+def generate_expr_exc(exclude, depth=0):
+    candidates = [v for v in exist_vars if v != exclude] + NUM
+    if depth >= 1 or (candidates and random.random() < 0.5):
+        return random.choice(candidates)
+    if random.random() < 0.3 or len(candidates) < 2:
+        return random.choice(NUM)
+    op = random.choice(OP)
+    left = generate_expr_exc(exclude, depth + 1)
+    right = generate_expr_exc(exclude, depth + 1)
+    return f"({op} {left} {right})"
+
 def tokenize(expr: str):
     expr = expr.replace('(', ' ( ').replace(')', ' ) ')
     return expr.split()
@@ -49,13 +61,14 @@ def eval_tokens(tokens):
             return var_values.get(token, 0)
     return helper()
 
+#function for later use to evaluate expressions
 def expr_eval(expr: str):
     tokens = tokenize(expr)
     return eval_tokens(tokens)
 
 def generate_define():
     var = fresh_var()
-    expr = generate_expr()
+    expr = generate_expr_exc(var)
     if expr == var:
         expr = random.choice(NUM)
     val = expr_eval(expr)
@@ -70,6 +83,7 @@ def generate_print():
     expr = random.choice(exist_vars)
     return f"(print {expr})"
 
+#a list with all statements generators
 statements = [generate_define, generate_print]
 
 def generate_statement():
@@ -82,7 +96,8 @@ def generate_program(num_stat=random.randint(3, 5)):
     var_values = {}
     return "\n".join(generate_statement() for _ in range(num_stat))
 
-def save_dataset(num_samples=5):
+#num_samples can be changed later
+def save_dataset(num_samples=5000):
     output_dir = "dataset"
     os.makedirs(output_dir, exist_ok=True)
     for i in range(num_samples):
