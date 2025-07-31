@@ -132,7 +132,6 @@ def generate_if_two_vars():
             if defined_var in exist_vars:
                 exist_vars.remove(defined_var)
                 var_values.pop(defined_var, None)
-
     return f"(if {condition}\n\t{pos_branch}\n\t{neg_branch}\n)"
 
 non_func = [generate_if, generate_define, generate_print]
@@ -160,7 +159,6 @@ def generate_func():
     exist_vars = outer_vars
     var_values = outer_values
     return f"(func {func_name} ({arg})\n{tabbed}\n)"
-
 
 def generate_call():
     if not func_names:
