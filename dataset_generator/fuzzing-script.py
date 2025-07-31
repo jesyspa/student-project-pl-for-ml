@@ -5,7 +5,20 @@ OP = ["+", "-", "*", "/"]
 NUM = [str(random.randint(1, 100)) for _ in range(50)]
 exist_vars = []
 var_pool = ["x", "y", "z", "a", "b", "c", "d", "e", "f"]
-var_values = {}
+
+env_stack=[{}]
+def current_env():
+    return env_stack[-1]
+
+def set_var(name, value):
+    current_env()[name] = value
+
+def get_var(name):
+    for env in reversed(env_stack):
+        if name in env:
+            return env[name]
+    return 0
+
 
 def fresh_var():
     for v in var_pool:
@@ -22,9 +35,8 @@ def generate_expr(depth=0):
     op = random.choice(OP)
     left = generate_expr(depth + 1)
     right = generate_expr(depth + 1)
-    return f"({op} {left} {right})"
+    return op, left, right
 
-#function to prevent usage of a variable during its definition
 def generate_expr_exc(exclude, depth=0):
     candidates = [v for v in exist_vars if v != exclude] + NUM
     if depth >= 1 or (candidates and random.random() < 0.5):
@@ -34,46 +46,34 @@ def generate_expr_exc(exclude, depth=0):
     op = random.choice(OP)
     left = generate_expr_exc(exclude, depth + 1)
     right = generate_expr_exc(exclude, depth + 1)
-    return f"({op} {left} {right})"
+    return op, left, right
 
-def tokenize(expr: str):
-    expr = expr.replace('(', ' ( ').replace(')', ' ) ')
-    return expr.split()
+def eval_expr_tree(tree):
+    if isinstance(tree, tuple):
+        op, left, right = tree
+        l_val = eval_expr_tree(left)
+        r_val = eval_expr_tree(right)
+        if op == '+': return l_val + r_val
+        if op == '-': return l_val - r_val
+        if op == '*': return l_val * r_val
+        if op == '/': return int(l_val / r_val) if r_val != 0 else 0
+    elif tree.isdigit():
+        return int(tree)
+    else:
+        return get_var(tree)
 
-def eval_tokens(tokens):
-    def helper():
-        token = tokens.pop(0)
-        if token == '(':
-            op = tokens.pop(0)
-            left = helper()
-            right = helper()
-            tokens.pop(0)
-            if op == '+': return left + right
-            if op == '-': return left - right
-            if op == '*': return left * right
-            if op == '/':
-                if right == 0:
-                    return 0
-                return int(left / right)
-        elif token.isdigit():
-            return int(token)
-        else:
-            return var_values.get(token, 0)
-    return helper()
-
-#function for later use to evaluate expressions
-def expr_eval(expr: str):
-    tokens = tokenize(expr)
-    return eval_tokens(tokens)
+def pretty_print_expr(tree):
+    if isinstance(tree, tuple):
+        op, left, right = tree
+        return f"({op} {pretty_print_expr(left)} {pretty_print_expr(right)})"
+    return tree
 
 def generate_define():
     var = fresh_var()
-    expr = generate_expr_exc(var)
-    if expr == var:
-        expr = random.choice(NUM)
-    val = expr_eval(expr)
-    var_values[var] = val
-    return f"(define {var} {expr})"
+    expr_tree = generate_expr_exc(var)
+    expr_val = eval_expr_tree(expr_tree)
+    set_var(var, expr_val)
+    return f"(define {var} {pretty_print_expr(expr_tree)})"
 
 def generate_print():
     if random.random() < 0.1:
@@ -83,21 +83,19 @@ def generate_print():
     expr = random.choice(exist_vars)
     return f"(print {expr})"
 
-#a list with all statements generators
 statements = [generate_define, generate_print]
 
 def generate_statement():
     return random.choice(statements)()
 
 def generate_program(num_stat=random.randint(3, 5)):
-    global exist_vars, func_names, var_values
+    global exist_vars
     exist_vars = []
-    func_names = []
-    var_values = {}
+    env_stack.clear()
+    env_stack.append({})
     return "\n".join(generate_statement() for _ in range(num_stat))
 
-#num_samples can be changed later
-def save_dataset(num_samples=5000):
+def save_dataset(num_samples=5):
     output_dir = "dataset"
     os.makedirs(output_dir, exist_ok=True)
     for i in range(num_samples):
