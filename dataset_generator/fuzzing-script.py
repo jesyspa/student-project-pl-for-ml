@@ -5,7 +5,7 @@ from nelox.Expr import Variable, Literal, List
 from nelox.nelox_token import Token
 from nelox.token_type import TokenType
 from dataset_generator.EnvStack import EnvStack
-from nelox.pretty_printer import pretty
+from nelox.pretty_printer import pretty,pretty_program
 
 OP = ["+", "-", "*", "/"]
 NUM = [random.randint(1, 100) for _ in range(50)]
@@ -84,18 +84,18 @@ class Fuzzer:
     def generate_statement(self):
         return random.choice(self.statements)()
 
-    def generate_program(self,num_stat=random.randint(3, 5)):
-        self.env.reset()
-        prog = [self.generate_statement() for _ in range(num_stat)]
-        return "\n".join(pretty(stmt) for stmt in prog)
-
     def save_dataset(self, num_samples=500):
         output_dir = "dataset"
         os.makedirs(output_dir, exist_ok=True)
         for i in range(num_samples):
-            code = self.generate_program()
+            code = generate_program(self)
             with open(os.path.join(output_dir, f"sample_{i+1}.txt"), "w") as f:
                 f.write(code)
+
+def generate_program(fuzzer, num_stat=random.randint(3, 5)):
+    fuzzer.env.reset()
+    prog = [fuzzer.generate_statement() for _ in range(num_stat)]
+    return pretty_program(prog)
 
 if __name__ == "__main__":
     Fuzzer().save_dataset()

@@ -7,3 +7,6 @@ def pretty(expr):
         return expr.name.lexeme
     if isinstance(expr, List):
         return f"({' '.join(pretty(e) for e in expr.elements)})"
+
+def pretty_program(statements: list) -> str:
+    return "\n".join(pretty(stmt) for stmt in statements)
