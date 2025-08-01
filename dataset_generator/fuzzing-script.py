@@ -1,87 +1,75 @@
 import random
 import os
+from nelox.Expr import Variable, Literal, List
+from nelox.nelox_token import Token
+from nelox.token_type import TokenType
+from dataset_generator.EnvStack import EnvStack
 
 OP = ["+", "-", "*", "/"]
-NUM = [str(random.randint(1, 100)) for _ in range(50)]
-exist_vars = []
+NUM = [random.randint(1, 100) for _ in range(50)]
 var_pool = ["x", "y", "z", "a", "b", "c", "d", "e", "f"]
-
-env_stack=[{}]
-def current_env():
-    return env_stack[-1]
-
-def set_var(name, value):
-    current_env()[name] = value
-
-def get_var(name):
-    for env in reversed(env_stack):
-        if name in env:
-            return env[name]
-    return 0
-
+env = EnvStack()
 
 def fresh_var():
     for v in var_pool:
-        if v not in exist_vars:
-            exist_vars.append(v)
+        if not env.is_available(v):
+            env.set_var(v)
             return v
-    return f"n{len(exist_vars)}"
+    v = f"n{len(env.all_vars())}"
+    env.set_var(v)
+    return
+
+def make_token(type_, lexeme):
+    return Token(type_, lexeme, None, 0)
+
+def make_op_token(op):
+    return make_token(TokenType.IDENTIFIER, op)
+
+def make_var_token(name):
+    return make_token(TokenType.IDENTIFIER, name)
 
 def generate_expr(depth=0):
-    if depth >= 1 or (exist_vars and random.random() < 0.5):
-        return random.choice(exist_vars + NUM)
-    if random.random() < 0.3 or len(exist_vars) < 2:
-        return random.choice(NUM)
-    op = random.choice(OP)
-    left = generate_expr(depth + 1)
-    right = generate_expr(depth + 1)
-    return op, left, right
+    vars_available = env.all_vars()
+    if depth >= 1 or (vars_available and random.random() < 0.5):
+        return random.choice(
+            [Variable(make_var_token(v)) for v in vars_available] +
+            [Literal(n) for n in NUM]
+        )
 
 def generate_expr_exc(exclude, depth=0):
-    candidates = [v for v in exist_vars if v != exclude] + NUM
+    candidates = [v for v in env.all_vars() if v != exclude]
+    var_exprs = [Variable(make_var_token(v)) for v in candidates]
+    literals = [Literal(n) for n in NUM]
     if depth >= 1 or (candidates and random.random() < 0.5):
-        return random.choice(candidates)
+        return random.choice(var_exprs + literals)
     if random.random() < 0.3 or len(candidates) < 2:
-        return random.choice(NUM)
+        return Literal(random.choice(NUM))
     op = random.choice(OP)
-    left = generate_expr_exc(exclude, depth + 1)
-    right = generate_expr_exc(exclude, depth + 1)
-    return op, left, right
+    return List([
+        Variable(make_op_token(op)),
+        generate_expr_exc(exclude, depth + 1),
+        generate_expr_exc(exclude, depth + 1)
+    ])
 
-def eval_expr_tree(tree):
-    if isinstance(tree, tuple):
-        op, left, right = tree
-        l_val = eval_expr_tree(left)
-        r_val = eval_expr_tree(right)
-        if op == '+': return l_val + r_val
-        if op == '-': return l_val - r_val
-        if op == '*': return l_val * r_val
-        if op == '/': return int(l_val / r_val) if r_val != 0 else 0
-    elif tree.isdigit():
-        return int(tree)
-    else:
-        return get_var(tree)
-
-def pretty_print_expr(tree):
-    if isinstance(tree, tuple):
-        op, left, right = tree
-        return f"({op} {pretty_print_expr(left)} {pretty_print_expr(right)})"
-    return tree
+def pretty(expr):
+    if isinstance(expr, Literal):
+        return str(expr.value)
+    if isinstance(expr, Variable):
+        return expr.name.lexeme
+    if isinstance(expr, List):
+        return f"({' '.join(pretty(e) for e in expr.elements)})"
 
 def generate_define():
     var = fresh_var()
-    expr_tree = generate_expr_exc(var)
-    expr_val = eval_expr_tree(expr_tree)
-    set_var(var, expr_val)
-    return f"(define {var} {pretty_print_expr(expr_tree)})"
+    expr = generate_expr_exc(var)
+    return f"(define {var} {pretty(expr)})"
 
 def generate_print():
     if random.random() < 0.1:
         return f"(print {random.randint(1, 100)})"
-    if not exist_vars:
+    if not env.all_vars():
         return generate_define()
-    expr = random.choice(exist_vars)
-    return f"(print {expr})"
+    return f"(print {random.choice(env.all_vars())})"
 
 statements = [generate_define, generate_print]
 
@@ -89,10 +77,7 @@ def generate_statement():
     return random.choice(statements)()
 
 def generate_program(num_stat=random.randint(3, 5)):
-    global exist_vars
-    exist_vars = []
-    env_stack.clear()
-    env_stack.append({})
+    env.reset()
     return "\n".join(generate_statement() for _ in range(num_stat))
 
 def save_dataset(num_samples=5):
