@@ -25,3 +25,5 @@ def generator():
 
     generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
     return generated_text
+if __name__ == "__main__":
+    print(generator())

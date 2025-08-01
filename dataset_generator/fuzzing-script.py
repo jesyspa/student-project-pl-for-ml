@@ -1,23 +1,15 @@
 import random
 import os
+from typing import Union
 from nelox.Expr import Variable, Literal, List
 from nelox.nelox_token import Token
 from nelox.token_type import TokenType
 from dataset_generator.EnvStack import EnvStack
+from nelox.pretty_printer import pretty
 
 OP = ["+", "-", "*", "/"]
 NUM = [random.randint(1, 100) for _ in range(50)]
 var_pool = ["x", "y", "z", "a", "b", "c", "d", "e", "f"]
-env = EnvStack()
-
-def fresh_var():
-    for v in var_pool:
-        if not env.is_available(v):
-            env.set_var(v)
-            return v
-    v = f"n{len(env.all_vars())}"
-    env.set_var(v)
-    return
 
 def make_token(type_, lexeme):
     return Token(type_, lexeme, None, 0)
@@ -28,65 +20,82 @@ def make_op_token(op):
 def make_var_token(name):
     return make_token(TokenType.IDENTIFIER, name)
 
-def generate_expr(depth=0):
-    vars_available = env.all_vars()
-    if depth >= 1 or (vars_available and random.random() < 0.5):
-        return random.choice(
-            [Variable(make_var_token(v)) for v in vars_available] +
-            [Literal(n) for n in NUM]
-        )
+class Fuzzer:
+    def __init__(self):
+        self.env = EnvStack()
+        self.statements = [self.generate_define, self.generate_print]
 
-def generate_expr_exc(exclude, depth=0):
-    candidates = [v for v in env.all_vars() if v != exclude]
-    var_exprs = [Variable(make_var_token(v)) for v in candidates]
-    literals = [Literal(n) for n in NUM]
-    if depth >= 1 or (candidates and random.random() < 0.5):
-        return random.choice(var_exprs + literals)
-    if random.random() < 0.3 or len(candidates) < 2:
-        return Literal(random.choice(NUM))
-    op = random.choice(OP)
-    return List([
-        Variable(make_op_token(op)),
-        generate_expr_exc(exclude, depth + 1),
-        generate_expr_exc(exclude, depth + 1)
-    ])
+    def fresh_var(self):
+        for v in var_pool:
+            if not self.env.is_available(v):
+                self.env.set_var(v)
+                return v
+        v = f"n{len(self.env.all_vars())}"
+        self.env.set_var(v)
+        return v
 
-def pretty(expr):
-    if isinstance(expr, Literal):
-        return str(expr.value)
-    if isinstance(expr, Variable):
-        return expr.name.lexeme
-    if isinstance(expr, List):
-        return f"({' '.join(pretty(e) for e in expr.elements)})"
+    def generate_expr(self,depth=0):
+        vars_available = self.env.all_vars()
+        if depth >= 1 or (vars_available and random.random() < 0.5):
+            return random.choice(
+                [Variable(make_var_token(v)) for v in vars_available] +
+                [Literal(n) for n in NUM]
+            )
+        op = random.choice(OP)
+        return List([
+            Variable(make_op_token(op)),
+            self.generate_expr(depth + 1),
+            self.generate_expr(depth + 1)
+        ])
 
-def generate_define():
-    var = fresh_var()
-    expr = generate_expr_exc(var)
-    return f"(define {var} {pretty(expr)})"
+    #replaces self-defining variable in the expression with a random integer
+    def var_replacer(self,expr, var_name):
+        if isinstance(expr, Variable):
+            if expr.name.lexeme == var_name:
+                return Literal(random.choice(NUM))
+            return expr
+        if isinstance(expr, List):
+            return List([self.var_replacer(e, var_name) for e in expr.elements])
+        return expr
 
-def generate_print():
-    if random.random() < 0.1:
-        return f"(print {random.randint(1, 100)})"
-    if not env.all_vars():
-        return generate_define()
-    return f"(print {random.choice(env.all_vars())})"
+    def generate_define(self) ->List:
+        var = self.fresh_var()
+        expr = self.generate_expr()
+        expr = self.var_replacer(expr, var)
+        return List([
+            Variable(make_var_token("define")),
+            Variable(make_var_token(var)),
+            expr
+        ])
 
-statements = [generate_define, generate_print]
+    def generate_print(self) -> Union[List, None]:
+        if random.random() < 0.1:
+            return List([
+                Variable(make_var_token("print")),
+                Literal(random.randint(1, 100))
+            ])
+        if not self.env.all_vars():
+            return self.generate_define()
+        return List([
+            Variable(make_var_token("print")),
+            Variable(make_var_token(random.choice(self.env.all_vars())))
+        ])
 
-def generate_statement():
-    return random.choice(statements)()
+    def generate_statement(self):
+        return random.choice(self.statements)()
 
-def generate_program(num_stat=random.randint(3, 5)):
-    env.reset()
-    return "\n".join(generate_statement() for _ in range(num_stat))
+    def generate_program(self,num_stat=random.randint(3, 5)):
+        self.env.reset()
+        prog = [self.generate_statement() for _ in range(num_stat)]
+        return "\n".join(pretty(stmt) for stmt in prog)
 
-def save_dataset(num_samples=5):
-    output_dir = "dataset"
-    os.makedirs(output_dir, exist_ok=True)
-    for i in range(num_samples):
-        code = generate_program()
-        with open(os.path.join(output_dir, f"sample_{i+1}.txt"), "w") as f:
-            f.write(code)
+    def save_dataset(self, num_samples=500):
+        output_dir = "dataset"
+        os.makedirs(output_dir, exist_ok=True)
+        for i in range(num_samples):
+            code = self.generate_program()
+            with open(os.path.join(output_dir, f"sample_{i+1}.txt"), "w") as f:
+                f.write(code)
 
 if __name__ == "__main__":
-    save_dataset()
+    Fuzzer().save_dataset()
