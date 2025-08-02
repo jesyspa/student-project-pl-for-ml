@@ -1,27 +1,33 @@
 import unittest
-from pathlib import Path
 from nelox.scanner import Scanner
 from nelox.parser import Parser
 from nelox.interpreter import Interpreter
+from dataset_generator.fuzzer import Fuzzer
 
 class TestGenerated(unittest.TestCase):
-    def test_all_cases(self):
-        base = Path(__file__).resolve().parent.parent
-        folder = base / "dataset_generator" / "dataset"
-        for test_file in folder.glob("*.txt"):
-            with self.subTest(testcase=test_file.name):
-                with test_file.open(encoding="utf-8") as f:
-                    src = f.read()
+    def setUp(self):
+        self.fuzzer = Fuzzer()
 
-                scanner = Scanner(src)
-                parser = Parser(scanner)
-                expressions = parser.parse()
+    def test_pretty_parse_roundtrip(self):
+        for _ in range(self.fuzzer.num_samples):
+            program_str = self.fuzzer.generate_program()
+            scanner = Scanner(program_str)
+            parser = Parser(scanner)
+            try:
+                parser.parse()
+            except Exception:
+                self.fail(f"Parser failed: {program_str}")
 
-                try:
-                    interpreter = Interpreter()
-                    interpreter.interpret(expressions)
-                except Exception as e:
-                    self.fail(f"Failed to interpret {test_file.name}: {e}")
+    def test_generated_programs_execute(self):
+        for _ in range(50):
+            program_str = self.fuzzer.generate_program()
+            scanner = Scanner(program_str)
+            parser = Parser(scanner)
+            expressions = parser.parse()
+            try:
+                Interpreter().interpret(expressions)
+            except Exception:
+                self.fail(f"Interpreter failed: {program_str}")
 
 if __name__ == "__main__":
     unittest.main()

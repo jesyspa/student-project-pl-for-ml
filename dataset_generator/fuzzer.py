@@ -5,10 +5,10 @@ from nelox.Expr import Variable, Literal, List
 from nelox.nelox_token import Token
 from nelox.token_type import TokenType
 from dataset_generator.EnvStack import EnvStack
-from nelox.pretty_printer import pretty,pretty_program
+from nelox.pretty_printer import pretty_program
 
-OP = ["+", "-", "*", "/"]
-NUM = [random.randint(1, 100) for _ in range(50)]
+ops = ["+", "-", "*", "/"]
+nums = [random.randint(1, 100) for _ in range(50)]
 var_pool = ["x", "y", "z", "a", "b", "c", "d", "e", "f"]
 
 def make_token(type_, lexeme):
@@ -24,6 +24,7 @@ class Fuzzer:
     def __init__(self):
         self.env = EnvStack()
         self.statements = [self.generate_define, self.generate_print]
+        self.num_samples = 5
 
     def fresh_var(self):
         for v in var_pool:
@@ -39,9 +40,9 @@ class Fuzzer:
         if depth >= 1 or (vars_available and random.random() < 0.5):
             return random.choice(
                 [Variable(make_var_token(v)) for v in vars_available] +
-                [Literal(n) for n in NUM]
+                [Literal(n) for n in nums]
             )
-        op = random.choice(OP)
+        op = random.choice(ops)
         return List([
             Variable(make_op_token(op)),
             self.generate_expr(depth + 1),
@@ -52,7 +53,7 @@ class Fuzzer:
     def var_replacer(self,expr, var_name):
         if isinstance(expr, Variable):
             if expr.name.lexeme == var_name:
-                return Literal(random.choice(NUM))
+                return Literal(random.choice(nums))
             return expr
         if isinstance(expr, List):
             return List([self.var_replacer(e, var_name) for e in expr.elements])
@@ -78,24 +79,28 @@ class Fuzzer:
             return self.generate_define()
         return List([
             Variable(make_var_token("print")),
-            Variable(make_var_token(random.choice(self.env.all_vars())))
+            self.generate_expr()
         ])
 
     def generate_statement(self):
         return random.choice(self.statements)()
 
-    def save_dataset(self, num_samples=500):
+    def generate_program(self, num_stat: int = None) -> str:
+        self.env.reset()
+        if num_stat is None:
+            num_stat = random.randint(3, 5)
+        prog = [self.generate_statement() for _ in range(num_stat)]
+        return pretty_program(prog)
+
+    def save_dataset(self, num_statements_range=(3, 5)):
         output_dir = "dataset"
         os.makedirs(output_dir, exist_ok=True)
-        for i in range(num_samples):
-            code = generate_program(self)
+        for i in range(self.num_samples):
+            num_stat = random.randint(*num_statements_range)
+            code = self.generate_program(num_stat)
             with open(os.path.join(output_dir, f"sample_{i+1}.txt"), "w") as f:
                 f.write(code)
 
-def generate_program(fuzzer, num_stat=random.randint(3, 5)):
-    fuzzer.env.reset()
-    prog = [fuzzer.generate_statement() for _ in range(num_stat)]
-    return pretty_program(prog)
 
 if __name__ == "__main__":
     Fuzzer().save_dataset()

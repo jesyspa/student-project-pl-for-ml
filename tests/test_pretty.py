@@ -25,5 +25,15 @@ class PrettyPrinterTest(unittest.TestCase):
         ])
         self.assertEqual(pretty(expr), "(+ x 5)")
 
+    def test_nested_expression(self):
+        plus = Variable(make_token(TokenType.IDENTIFIER, "+"))
+        mult = Variable(make_token(TokenType.IDENTIFIER, "*"))
+        x = Variable(make_token(TokenType.IDENTIFIER, "x"))
+
+        inner = List([mult, x, Literal(3)])
+        outer = List([plus, Literal(1), inner])
+
+        self.assertEqual(pretty(outer), "(+ 1 (* x 3))")
+
 if __name__ == "__main__":
     unittest.main()
