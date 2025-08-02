@@ -19,15 +19,13 @@ class TestGenerated(unittest.TestCase):
                 self.fail(f"Parser failed: {program_str}")
 
     def test_generated_programs_execute(self):
-        for _ in range(50):
-            program_str = self.fuzzer.generate_program()
-            scanner = Scanner(program_str)
-            parser = Parser(scanner)
-            expressions = parser.parse()
+        for _ in range(self.fuzzer.num_samples):
+            self.fuzzer.env.reset()
+            prog = [self.fuzzer.generate_statement() for _ in range(5)]
             try:
-                Interpreter().interpret(expressions)
+                Interpreter().interpret(prog)
             except Exception:
-                self.fail(f"Interpreter failed: {program_str}")
+                self.fail(f"Interpreter failed: {prog}")
 
 if __name__ == "__main__":
     unittest.main()
