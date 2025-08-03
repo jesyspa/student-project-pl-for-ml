@@ -74,6 +74,10 @@ def _not_equal(*args):
     return args[0] != args[1]
 
 
+def raise_(msg):
+    raise RuntimeError(msg)
+
+
 def _define_builtins(env):
     env.define("true", True)
     env.define("false", False)
@@ -99,8 +103,8 @@ def _define_builtins(env):
     env.define("to-list", lambda s: list(s))
     env.define("to-lower", lambda s: s.lower())
     env.define("to-upper", lambda s: s.upper())
-    env.define("get-ascii", lambda c: ord(c) if isinstance(c, str) and len(c) == 1 else
-               (_raise := RuntimeError("'get-ascii' expects a single character")) or None)
+    env.define("get-ascii", lambda c: ord(c) if isinstance(c, str) and len(c) == 1 else raise_(
+        "'get-ascii' expects a single character"))
 
 
 class Interpreter:
@@ -168,35 +172,26 @@ class Interpreter:
 
                 elif name == "lambda":
                     param_tokens = args[0].elements
-                    body = args[1]
+                    body__expr = args[1:]
                     param_names = [tok.name.lexeme for tok in param_tokens]
 
                     def fn(*call_args):
                         local = Environment(parent=env)
                         for pname, param_val in zip(param_names, call_args):
                             local.define(pname, param_val)
-                        return self.evaluate(body, local)
-
+                        result_ = None
+                        for express in body__expr:
+                            result_ = self.evaluate(express, local)
+                        return result_
                     return fn
-
-                elif name == "begin":
-                    return self.interpret(args)
-
-                elif name == "read-int":
-                    var_name = args[0].name.lexeme
-                    try:
-                        value = int(input())
-                    except ValueError:
-                        raise RuntimeError("'read-int' requires an integer number")
-                    env.set(var_name, value)
-                    return value
 
                 elif name == "while":
                     condition = args[0]
-                    body = args[1]
+                    body__expr = args[1:]
                     result = None
                     while self.evaluate(condition, env):
-                        result = self.evaluate(body, env)
+                        for expr in body__expr:
+                            result = self.evaluate(expr, env)
                     return result
 
                 elif name == "and":
@@ -257,6 +252,49 @@ class Interpreter:
                     value = input()
                     env.set(var_name, value)
                     return value
+
+                elif name == "get-seq":
+                    container = self.evaluate(args[0], env)
+                    index = self.evaluate(args[1], env)
+                    if isinstance(container, list) or isinstance(container, str):
+                        try:
+                            return container[index]
+                        except IndexError:
+                            raise RuntimeError("'get-seq': index out of range")
+                    raise RuntimeError("'get-seq' expects a list or string")
+
+                elif name == "set-seq":
+                    var_name = args[0].name.lexeme
+                    value = self.evaluate(args[1], env)
+                    env.set(var_name, value)
+                    return value
+
+                elif name == "for":
+                    var_token = args[0].name
+                    start = self.evaluate(args[1], env)
+                    end = self.evaluate(args[2], env)
+                    body = args[3]
+
+                    result = None
+                    for i in range(start, end):
+                        loop_env = Environment(parent=env)
+                        loop_env.define(var_token.lexeme, i)
+                        result = self.evaluate(body, loop_env)
+                    return result
+
+                elif name == "read-int":
+                    var_tokens = [arg.name.lexeme for arg in args]
+                    try:
+                        values = list(map(int, input().split()))
+                    except ValueError:
+                        raise RuntimeError("'read-int' expects integer input")
+
+                    if len(values) != len(var_tokens):
+                        raise RuntimeError(f"'read-int' expected {len(var_tokens)} values, got {len(values)}")
+
+                    for var_name, val in zip(var_tokens, values):
+                        env.set(var_name, val) if env.find_env(var_name) else env.define(var_name, val)
+                    return values
 
             func = self.evaluate(head, env)
             evaluated_args = [self.evaluate(arg, env) for arg in args]

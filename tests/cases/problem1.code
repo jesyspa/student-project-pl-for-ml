@@ -1,0 +1,9 @@
+(define n 0)
+(define m 0)
+(define a 0)
+
+(read-int n m a)
+
+(define tiles-n (+ (div (- n 1) a) 1))
+(define tiles-m (+ (div (- m 1) a) 1))
+(print(* tiles-n tiles-m))
