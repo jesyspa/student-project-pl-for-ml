@@ -42,7 +42,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(expr.elements[2].value, 42)
 
     def test_nested_lists(self):
-        source = "(+ 1 (* 2 3))"
+        source = "(+ 1 ($this is comment\n* 2 3))"
         scanner = Scanner(source)
         parser = Parser(scanner)
         exprs = parser.parse()

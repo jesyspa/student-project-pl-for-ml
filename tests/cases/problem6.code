@@ -1,0 +1,14 @@
+(define username "")
+(read-line username)
+
+(define letters "")
+(to-list username)
+(define unique "")
+(all-unique letters)
+(define count 0)
+(set count (length (to-list unique)))
+
+(if (= (mod count 2) 0)
+    (print "CHAT WITH HER!")
+    (print "IGNORE HIM!")
+)
