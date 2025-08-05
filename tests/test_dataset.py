@@ -14,22 +14,18 @@ class TestGenerated(unittest.TestCase):
         for _ in range(5):
             program = self.fuzzer.generate_program()
             program_str = pretty_program(program)
-            scanner = Scanner(program_str)
-            parser = Parser(scanner)
-            try:
+            with self.subTest(program=program_str):
+                scanner = Scanner(program_str)
+                parser = Parser(scanner)
                 parser.parse()
-            except Exception:
-                self.fail(f"Parser failed: {program_str}")
 
     def test_generated_programs_execute(self):
         for _ in range(5):
             self.fuzzer.env.reset()
             program = self.fuzzer.generate_program()
-            try:
+            program_str = pretty_program(program)
+            with self.subTest(program=program_str):
                 Interpreter().interpret(program)
-            except Exception:
-                program_str = pretty_program(program)
-                self.fail(f"Interpreter failed:\n{program_str}")
 
 if __name__ == "__main__":
     unittest.main()
