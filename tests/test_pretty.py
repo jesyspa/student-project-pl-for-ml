@@ -35,5 +35,35 @@ class PrettyPrinterTest(unittest.TestCase):
 
         self.assertEqual(pretty(outer), "(+ 1 (* x 3))")
 
+    def test_function_expression(self):
+        func_token = make_token(TokenType.IDENTIFIER, "func")
+        name_token = make_token(TokenType.IDENTIFIER, "f")
+        arg_token = make_token(TokenType.IDENTIFIER, "x")
+        print_token = make_token(TokenType.IDENTIFIER, "print")
+
+        body1 = List([
+            Variable(print_token),
+            Variable(arg_token)
+        ])
+        body2 = List([
+            Variable(print_token),
+            Literal(99)
+        ])
+        func_expr = List([
+            Variable(func_token),
+            Variable(name_token),
+            List([Variable(arg_token)]),
+            body1,
+            body2
+        ])
+        exp = (
+            "(func f (x)\n"
+            "   (print x)\n"
+            "   (print 99)\n"
+            ")"
+        )
+        self.assertEqual(pretty(func_expr), exp)
+
+
 if __name__ == "__main__":
     unittest.main()
