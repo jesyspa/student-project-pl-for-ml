@@ -1,11 +1,9 @@
 import random
-import os
 from typing import Union
 from nelox.Expr import Variable, Literal, List
 from nelox.nelox_token import Token
 from nelox.token_type import TokenType
 from dataset_generator.EnvStack import EnvStack
-from nelox.pretty_printer import pretty_program
 
 ops = ["+", "-", "*", "/"]
 nums = [random.randint(1, 100) for _ in range(50)]
@@ -24,7 +22,6 @@ class Fuzzer:
     def __init__(self):
         self.env = EnvStack()
         self.statements = [self.generate_define, self.generate_print]
-        self.num_samples = 5
 
     def fresh_var(self):
         for v in var_pool:
@@ -85,22 +82,7 @@ class Fuzzer:
     def generate_statement(self):
         return random.choice(self.statements)()
 
-    def generate_program(self, num_stat: int = None) -> str:
-        self.env.reset()
+    def generate_program(self, num_stat: int = None) -> list:
         if num_stat is None:
             num_stat = random.randint(3, 5)
-        prog = [self.generate_statement() for _ in range(num_stat)]
-        return pretty_program(prog)
-
-    def save_dataset(self, num_statements_range=(3, 5)):
-        output_dir = "dataset"
-        os.makedirs(output_dir, exist_ok=True)
-        for i in range(self.num_samples):
-            num_stat = random.randint(*num_statements_range)
-            code = self.generate_program(num_stat)
-            with open(os.path.join(output_dir, f"sample_{i+1}.txt"), "w") as f:
-                f.write(code)
-
-
-if __name__ == "__main__":
-    Fuzzer().save_dataset()
+        return [self.generate_statement() for _ in range(num_stat)]

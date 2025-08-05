@@ -2,7 +2,7 @@ import unittest
 from nelox.scanner import Scanner
 from nelox.parser import Parser
 from nelox.interpreter import Interpreter
-from dataset_generator.fuzzer import Fuzzer
+from dataset_generator.Fuzzer import Fuzzer
 
 class TestGenerated(unittest.TestCase):
     def setUp(self):
