@@ -1,4 +1,6 @@
 import unittest
+
+from nelox.pretty_printer import pretty_program
 from nelox.scanner import Scanner
 from nelox.parser import Parser
 from nelox.interpreter import Interpreter
@@ -9,8 +11,9 @@ class TestGenerated(unittest.TestCase):
         self.fuzzer = Fuzzer()
 
     def test_pretty_parse_roundtrip(self):
-        for _ in range(self.fuzzer.num_samples):
-            program_str = self.fuzzer.generate_program()
+        for _ in range(5):
+            program = self.fuzzer.generate_program()
+            program_str = pretty_program(program)
             scanner = Scanner(program_str)
             parser = Parser(scanner)
             try:
@@ -19,13 +22,14 @@ class TestGenerated(unittest.TestCase):
                 self.fail(f"Parser failed: {program_str}")
 
     def test_generated_programs_execute(self):
-        for _ in range(self.fuzzer.num_samples):
+        for _ in range(5):
             self.fuzzer.env.reset()
-            prog = [self.fuzzer.generate_statement() for _ in range(5)]
+            program = self.fuzzer.generate_program()
             try:
-                Interpreter().interpret(prog)
+                Interpreter().interpret(program)
             except Exception:
-                self.fail(f"Interpreter failed: {prog}")
+                program_str = pretty_program(program)
+                self.fail(f"Interpreter failed:\n{program_str}")
 
 if __name__ == "__main__":
     unittest.main()
