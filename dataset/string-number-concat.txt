@@ -1,0 +1,3 @@
+(define message "Result is:")
+(define value 42)
+(print (+ message value))
