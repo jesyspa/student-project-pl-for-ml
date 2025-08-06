@@ -12,8 +12,9 @@ from nelox.pretty_printer import pretty_program
 ops = ["+", "-", "*", "/"]
 nums = [random.randint(1, 100) for _ in range(50)]
 var_pool = ["x", "y", "z", "a", "b", "c", "d", "e", "f"]
+func_names_pool = [f"fun{i}" for i in range(50)]
 
-def save_dataset(output_dir="dataset", num_samples=5):
+def save_dataset(output_dir="dataset", num_samples=50):
     os.makedirs(output_dir, exist_ok=True)
     for i in range(num_samples):
         fuzzer = Fuzzer()
@@ -34,7 +35,9 @@ def make_var_token(name):
 class Fuzzer:
     def __init__(self):
         self.env = EnvStack()
-        self.statements = [self.generate_define, self.generate_print]
+        self.statements = [self.generate_define, self.generate_print,
+                           self.generate_func_call,self.generate_func]
+        self.func_statements = [self.generate_define, self.generate_print]
 
     def fresh_var(self):
         for v in var_pool:
@@ -90,13 +93,40 @@ class Fuzzer:
             self.generate_expr()
         ])
 
-    def generate_statement(self):
-        return random.choice(self.statements)()
+    def generate_func(self) -> List:
+        func_name = random.choice(func_names_pool)
+        param = self.fresh_var()
+        num_statements = random.randint(1, 3)
+        self.env.define_func(func_name)
+        self.env.push()
+        self.env.set_var(param)
+        body = [self.generate_statement(self.func_statements) for _ in range(num_statements)]
+        self.env.pop()
+        return List([
+            Variable(make_var_token("func")),
+            Variable(make_var_token(func_name)),
+            List([Variable(make_var_token(param))]),
+            *body
+        ])
+
+    def generate_func_call(self) -> List:
+        funcs_available = list(self.env.all_funcs())
+        if not funcs_available:
+            return self.generate_func()
+        arg = self.generate_expr()
+        func_name = random.choice(funcs_available)
+        return List([
+            Variable(make_var_token(func_name)),
+            arg
+        ])
+
+    def generate_statement(self,statements):
+        return random.choice(statements)()
 
     def generate_program(self, num_stat: int = None) -> list:
         if num_stat is None:
             num_stat = random.randint(3, 5)
-        return [self.generate_statement() for _ in range(num_stat)]
+        return [self.generate_statement(self.statements) for _ in range(num_stat)]
 
 if __name__ == "__main__":
     save_dataset()
