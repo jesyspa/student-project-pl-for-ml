@@ -6,15 +6,22 @@ def pretty(expr, ind = 0):
     if isinstance(expr, Variable):
         return expr.name.lexeme
     if isinstance(expr, List):
-        if (expr.elements
-        and isinstance(expr.elements[0], Variable)
-        and expr.elements[0].name.lexeme == "func"):
+        if func_recognizer(expr):
             header = f"(func {pretty(expr.elements[1])} {pretty(expr.elements[2])}"
-            body = "\n".join(
+            body_lines = [
                 "   " * (ind + 1) + pretty(e, ind + 1) for e in expr.elements[3:]
-            )
-            return f"{header}\n{body}\n{'    ' * ind})"
+            ]
+            if body_lines:
+                body_lines[-1] += ")"
+                return f"{header}\n" + "\n".join(body_lines)
+            else:
+                return f"{header})"
         return f"({' '.join(pretty(e, ind) for e in expr.elements)})"
 
 def pretty_program(statements: list) -> str:
     return "\n".join(pretty(stmt) for stmt in statements)
+
+def func_recognizer(expr):
+    if (expr.elements and isinstance(expr.elements[0], Variable)
+        and expr.elements[0].name.lexeme == "func"):
+        return True

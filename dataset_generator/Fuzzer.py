@@ -96,10 +96,11 @@ class Fuzzer:
     def generate_func(self) -> List:
         func_name = random.choice(func_names_pool)
         param = self.fresh_var()
+        num_statements = random.randint(1, 3)
         self.env.define_func(func_name)
         self.env.push()
         self.env.set_var(param)
-        body = [self.generate_statement(self.func_statements) for _ in range(random.randint(1, 3))]
+        body = [self.generate_statement(self.func_statements) for _ in range(num_statements)]
         self.env.pop()
         return List([
             Variable(make_var_token("func")),
@@ -112,7 +113,7 @@ class Fuzzer:
         funcs_available = list(self.env.all_funcs())
         if not funcs_available:
             return self.generate_func()
-        arg = self.generate_expr() if self.env.all_vars() else Literal(random.randint(1, 100))
+        arg = self.generate_expr()
         func_name = random.choice(funcs_available)
         return List([
             Variable(make_var_token(func_name)),
