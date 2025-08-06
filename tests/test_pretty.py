@@ -59,8 +59,7 @@ class PrettyPrinterTest(unittest.TestCase):
         exp = (
             "(func f (x)\n"
             "   (print x)\n"
-            "   (print 99)\n"
-            ")"
+            "   (print 99))"
         )
         self.assertEqual(pretty(func_expr), exp)
 
