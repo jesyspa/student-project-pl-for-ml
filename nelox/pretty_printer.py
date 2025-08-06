@@ -22,6 +22,12 @@ def pretty_program(statements: list) -> str:
     return "\n".join(pretty(stmt) for stmt in statements)
 
 def func_recognizer(expr):
-    if (expr.elements and isinstance(expr.elements[0], Variable)
-        and expr.elements[0].name.lexeme == "func"):
+    if not isinstance(expr, List):
+        return False
+    if not expr.elements:
+        return False
+    if not isinstance(expr.elements[0], Variable):
+        return False
+    if expr.elements[0].name.lexeme == "func":
         return True
+    return False
