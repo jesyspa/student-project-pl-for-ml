@@ -11,7 +11,7 @@ class TestGenerated(unittest.TestCase):
         self.fuzzer = Fuzzer()
 
     def test_pretty_parse_roundtrip(self):
-        for _ in range(5):
+        for _ in range(500):
             program = self.fuzzer.generate_program()
             program_str = pretty_program(program)
             with self.subTest(program=program_str):
@@ -20,7 +20,7 @@ class TestGenerated(unittest.TestCase):
                 parser.parse()
 
     def test_generated_programs_execute(self):
-        for _ in range(5):
+        for _ in range(500):
             self.fuzzer.env.reset()
             program = self.fuzzer.generate_program()
             program_str = pretty_program(program)

@@ -43,11 +43,10 @@ class Fuzzer:
         self.func_statements = [self.generate_define, self.generate_print,
                                 self.generate_if_expression]
 
-        self.statements_for_if = [self.generate_print, self.generate_define,
-                                  self.generate_expr,self.generate_if_expression]
+        self.statements_for_if = [self.generate_print, self.generate_expr,
+                                  self.generate_if_expression]
 
-        self.deep_statements = [self.generate_define, self.generate_print,
-                                self.generate_expr]
+        self.deep_statements = [self.generate_print, self.generate_expr]
 
     def fresh_var(self):
         for v in var_pool:
@@ -57,6 +56,13 @@ class Fuzzer:
         v = f"n{len(self.env.all_vars())}"
         self.env.set_var(v)
         return v
+
+    def fresh_func(self):
+        used_funcs = set(self.env.all_funcs())
+        for f in func_names_pool:
+            if f not in used_funcs:
+                return f
+        return f"fn{len(used_funcs)}"
 
     def generate_expr(self,depth=0):
         vars_available = list(self.env.current_env())
@@ -104,7 +110,7 @@ class Fuzzer:
         ])
 
     def generate_func(self) -> List:
-        func_name = random.choice(func_names_pool)
+        func_name = self.fresh_func()
         num_statements = random.randint(1, 3)
         self.env.define_func(func_name)
         self.env.push()
@@ -148,12 +154,10 @@ class Fuzzer:
         ])
 
     def generate_body(self,depth=0) -> List:
-        self.env.push()
         if depth > 1:
             body = self.generate_statement(self.deep_statements)
         else:
             body = self.generate_statement(self.statements_for_if)
-        self.env.pop()
         return body
 
     def generate_if_expression(self,depth=0) -> List:
