@@ -13,7 +13,7 @@ ops = ["+", "-", "*", "/"]
 nums = [random.randint(1, 100) for _ in range(50)]
 var_pool = ["x", "y", "z", "a", "b", "c", "d", "e", "f"]
 func_names_pool = [f"fun{i}" for i in range(50)]
-conditions = ["<",">","<=",">="]
+conditions = ["<",">","<=",">=","!=","="]
 
 def save_dataset(output_dir="dataset", num_samples=50):
     os.makedirs(output_dir, exist_ok=True)
@@ -37,13 +37,17 @@ class Fuzzer:
     def __init__(self):
         self.env = EnvStack()
         self.statements = [self.generate_define, self.generate_print,
-                           self.generate_func_call,self.generate_func,
-                           self.generate_if_statement]
+                           self.generate_func_call, self.generate_func,
+                           self.generate_if_expression]
 
         self.func_statements = [self.generate_define, self.generate_print,
-                                self.generate_if_statement]
+                                self.generate_if_expression]
 
-        self.non_if_statements = [self.generate_print, self.generate_define]
+        self.statements_for_if = [self.generate_print, self.generate_define,
+                                  self.generate_expr,self.generate_if_expression]
+
+        self.deep_statements = [self.generate_define, self.generate_print,
+                                self.generate_expr]
 
     def fresh_var(self):
         for v in var_pool:
@@ -126,33 +130,36 @@ class Fuzzer:
             arg
         ])
 
+    def choose_var_or_expr(self):
+        vars_available = list(self.env.current_env())
+        if vars_available:
+            return Variable(make_var_token(random.choice(vars_available)))
+        else:
+            return self.generate_expr()
+
     def generate_condition(self):
         cond_op = random.choice(conditions)
         expr = self.generate_expr()
-        if not self.env.all_vars():
-            arg = self.generate_expr()
-            return List([
-                Variable(make_var_token(cond_op)),
-                arg,
-                expr
-            ])
-        arg = random.choice(list(self.env.current_env()))
+        arg = self.choose_var_or_expr()
         return List([
             Variable(make_var_token(cond_op)),
-            Variable(make_var_token(arg)),
+            arg,
             expr
         ])
 
-    def generate_body(self) -> List:
+    def generate_body(self,depth=0) -> List:
         self.env.push()
-        body = self.generate_statement(self.non_if_statements)
+        if depth > 1:
+            body = self.generate_statement(self.deep_statements)
+        else:
+            body = self.generate_statement(self.statements_for_if)
         self.env.pop()
         return body
 
-    def generate_if_statement(self) -> List:
+    def generate_if_expression(self,depth=0) -> List:
         cond = self.generate_condition()
-        body_true = self.generate_body()
-        body_false = self.generate_body()
+        body_true = self.generate_body(depth+1)
+        body_false = self.generate_body(depth+1)
         return List([
             Variable(make_var_token("if")),
             cond,
