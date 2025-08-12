@@ -35,6 +35,9 @@ def make_var_token(name):
 
 class Fuzzer:
     def __init__(self):
+        # An expression is a construct evaluated to yield a value
+        # A statement is a construct denoting a complete instruction for execution
+        # Expression returns a value while statements performs actions and are not themselves values
         self.env = EnvStack()
         self.statements = [self.generate_define, self.generate_print,
                            self.generate_func_call, self.generate_func,
@@ -58,14 +61,13 @@ class Fuzzer:
         return v
 
     def fresh_func(self):
-        used_funcs = set(self.env.all_funcs())
-        for f in func_names_pool:
-            if f not in used_funcs:
-                return f
-        return f"fn{len(used_funcs)}"
+        unused = set(func_names_pool) - set(self.env.all_funcs())
+        if unused:
+            return next(iter(unused))
+        return f"fn{len(self.env.all_funcs())}"
 
     def generate_expr(self,depth=0):
-        vars_available = list(self.env.current_env())
+        vars_available = self.env.all_vars()
         if depth >= 1 or (vars_available and random.random() < 0.5):
             return random.choice(
                 [Variable(make_var_token(v)) for v in vars_available] +
