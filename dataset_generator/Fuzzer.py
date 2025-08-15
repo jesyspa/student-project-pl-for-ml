@@ -13,7 +13,7 @@ ops = ["+", "-", "*", "/"]
 nums = [random.randint(1, 100) for _ in range(50)]
 var_pool = ["x", "y", "z", "a", "b", "c", "d", "e", "f"]
 func_names_pool = [f"fun{i}" for i in range(50)]
-
+conditions = ["<",">","<=",">=","!=","="]
 def save_dataset(output_dir="dataset", num_samples=50):
     os.makedirs(output_dir, exist_ok=True)
     for i in range(num_samples):
@@ -34,11 +34,22 @@ def make_var_token(name):
 
 class Fuzzer:
     def __init__(self):
+        # An expression is a construct evaluated to yield a value
+        # A statement is a construct denoting a complete instruction for execution
+        # Expression returns a value while statements performs actions and are not themselves values
         self.env = EnvStack()
+        self.MAX_IF_DEPTH = 5
         self.statements = [self.generate_define, self.generate_print,
-                           self.generate_func_call,self.generate_func]
-        self.func_statements = [self.generate_define, self.generate_print]
+                           self.generate_func_call, self.generate_func,
+                           self.generate_if_expression, self.generate_expr_statement]
 
+        self.func_statements = [self.generate_define, self.generate_print,
+                                self.generate_if_expression,  self.generate_expr_statement]
+
+        self.statements_for_if = [self.generate_print,  self.generate_expr_statement,
+                                  self.generate_if_expression]
+
+        self.deep_statements = [self.generate_print, self.generate_expr_statement]
     def fresh_var(self):
         for v in var_pool:
             if not self.env.is_available(v):
@@ -47,6 +58,12 @@ class Fuzzer:
         v = f"n{len(self.env.all_vars())}"
         self.env.set_var(v)
         return v
+
+    def fresh_func(self):
+        unused = set(func_names_pool) - set(self.env.all_funcs())
+        if unused:
+            return next(iter(unused))
+        return f"fn{len(self.env.all_funcs())}"
 
     def generate_expr(self,depth=0):
         vars_available = self.env.all_vars()
@@ -82,6 +99,9 @@ class Fuzzer:
             expr
         ])
 
+    def generate_expr_statement(self):
+        return self.generate_expr()
+
     def generate_print(self) -> Union[List, None]:
         if not self.env.all_vars():
             return List([
@@ -94,11 +114,11 @@ class Fuzzer:
         ])
 
     def generate_func(self) -> List:
-        func_name = random.choice(func_names_pool)
-        param = self.fresh_var()
+        func_name = self.fresh_func()
         num_statements = random.randint(1, 3)
         self.env.define_func(func_name)
         self.env.push()
+        param = self.fresh_var()
         self.env.set_var(param)
         body = [self.generate_statement(self.func_statements) for _ in range(num_statements)]
         self.env.pop()
@@ -118,6 +138,43 @@ class Fuzzer:
         return List([
             Variable(make_var_token(func_name)),
             arg
+        ])
+
+    def choose_var_or_expr(self):
+        vars_available = list(self.env.current_env())
+        if vars_available:
+            return Variable(make_var_token(random.choice(vars_available)))
+        else:
+            return self.generate_expr()
+
+    def generate_condition(self):
+        cond_op = random.choice(conditions)
+        expr = self.generate_expr()
+        arg = self.choose_var_or_expr()
+        return List([
+            Variable(make_var_token(cond_op)),
+            arg,
+            expr
+        ])
+
+    def generate_body(self,depth) -> List:
+        if depth > 1:
+            body = self.generate_statement(self.deep_statements)
+        else:
+            body = self.generate_statement(self.statements_for_if)
+        return body
+
+    def generate_if_expression(self,depth=None) -> List:
+        if depth is None:
+            depth = self.MAX_IF_DEPTH
+        cond = self.generate_condition()
+        body_true = self.generate_body(depth-1)
+        body_false = self.generate_body(depth-1)
+        return List([
+            Variable(make_var_token("if")),
+            cond,
+            body_true,
+            body_false
         ])
 
     def generate_statement(self,statements):

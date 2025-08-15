@@ -63,6 +63,33 @@ class PrettyPrinterTest(unittest.TestCase):
         )
         self.assertEqual(pretty(func_expr), exp)
 
+    def test_if_expression(self):
+        if_token = make_token(TokenType.IDENTIFIER, "if")
+        cond_token = make_token(TokenType.IDENTIFIER, "<")
+        x = make_token(TokenType.IDENTIFIER, "x")
+        y = make_token(TokenType.IDENTIFIER, "y")
+        print_token = make_token(TokenType.IDENTIFIER, "print")
+        cond = List([
+            Variable(cond_token),
+            Variable(x),
+            Variable(y)
+        ])
+        body_true = List([
+            Variable(print_token),
+            Literal(1)
+        ])
+        body_false = List([
+            Variable(print_token),
+            Literal(0)
+        ])
+        if_expr = List([
+            Variable(if_token),
+            cond,
+            body_true,
+            body_false
+        ])
+        expected = "(if (< x y)\n   (print 1)\n   (print 0))"
+        self.assertEqual(pretty(if_expr), expected)
 
 if __name__ == "__main__":
     unittest.main()
