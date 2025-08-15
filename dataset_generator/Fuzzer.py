@@ -14,7 +14,6 @@ nums = [random.randint(1, 100) for _ in range(50)]
 var_pool = ["x", "y", "z", "a", "b", "c", "d", "e", "f"]
 func_names_pool = [f"fun{i}" for i in range(50)]
 conditions = ["<",">","<=",">=","!=","="]
-
 def save_dataset(output_dir="dataset", num_samples=50):
     os.makedirs(output_dir, exist_ok=True)
     for i in range(num_samples):
@@ -39,18 +38,18 @@ class Fuzzer:
         # A statement is a construct denoting a complete instruction for execution
         # Expression returns a value while statements performs actions and are not themselves values
         self.env = EnvStack()
+        self.MAX_IF_DEPTH = 5
         self.statements = [self.generate_define, self.generate_print,
                            self.generate_func_call, self.generate_func,
-                           self.generate_if_expression]
+                           self.generate_if_expression, self.generate_expr_statement]
 
         self.func_statements = [self.generate_define, self.generate_print,
-                                self.generate_if_expression]
+                                self.generate_if_expression,  self.generate_expr_statement]
 
-        self.statements_for_if = [self.generate_print, self.generate_expr,
+        self.statements_for_if = [self.generate_print,  self.generate_expr_statement,
                                   self.generate_if_expression]
 
-        self.deep_statements = [self.generate_print, self.generate_expr]
-
+        self.deep_statements = [self.generate_print, self.generate_expr_statement]
     def fresh_var(self):
         for v in var_pool:
             if not self.env.is_available(v):
@@ -99,6 +98,9 @@ class Fuzzer:
             Variable(make_var_token(var)),
             expr
         ])
+
+    def generate_expr_statement(self):
+        return self.generate_expr()
 
     def generate_print(self) -> Union[List, None]:
         if not self.env.all_vars():
@@ -155,17 +157,19 @@ class Fuzzer:
             expr
         ])
 
-    def generate_body(self,depth=0) -> List:
+    def generate_body(self,depth) -> List:
         if depth > 1:
             body = self.generate_statement(self.deep_statements)
         else:
             body = self.generate_statement(self.statements_for_if)
         return body
 
-    def generate_if_expression(self,depth=0) -> List:
+    def generate_if_expression(self,depth=None) -> List:
+        if depth is None:
+            depth = self.MAX_IF_DEPTH
         cond = self.generate_condition()
-        body_true = self.generate_body(depth+1)
-        body_false = self.generate_body(depth+1)
+        body_true = self.generate_body(depth-1)
+        body_false = self.generate_body(depth-1)
         return List([
             Variable(make_var_token("if")),
             cond,
