@@ -14,7 +14,7 @@ nums = [random.randint(1, 100) for _ in range(50)]
 var_pool = ["x", "y", "z", "a", "b", "c", "d", "e", "f"]
 func_names_pool = [f"fun{i}" for i in range(50)]
 conditions = ["<",">","<=",">=","!=","="]
-def save_dataset(output_dir="dataset", num_samples=50):
+def save_dataset(output_dir="dataset", num_samples=5000):
     os.makedirs(output_dir, exist_ok=True)
     for i in range(num_samples):
         fuzzer = Fuzzer()
@@ -41,15 +41,15 @@ class Fuzzer:
         self.MAX_IF_DEPTH = 5
         self.statements = [self.generate_define, self.generate_print,
                            self.generate_func_call, self.generate_func,
-                           self.generate_if_expression, self.generate_expr_statement]
+                           self.generate_if_expression]
 
         self.func_statements = [self.generate_define, self.generate_print,
-                                self.generate_if_expression,  self.generate_expr_statement]
+                                self.generate_if_expression]
 
-        self.statements_for_if = [self.generate_print,  self.generate_expr_statement,
+        self.statements_for_if = [self.generate_print,
                                   self.generate_if_expression]
 
-        self.deep_statements = [self.generate_print, self.generate_expr_statement]
+        self.deep_statements = [self.generate_print]
     def fresh_var(self):
         for v in var_pool:
             if not self.env.is_available(v):
