@@ -25,3 +25,4 @@ def generator():
 
     generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
     return generated_text
+print(generator())
