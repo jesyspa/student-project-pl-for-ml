@@ -99,8 +99,6 @@ class Fuzzer:
             expr
         ])
 
-    def generate_expr_statement(self):
-        return self.generate_expr()
 
     def generate_print(self) -> Union[List, None]:
         if not self.env.all_vars():
