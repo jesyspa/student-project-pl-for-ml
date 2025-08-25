@@ -1,0 +1,19 @@
+(define n 0)
+(read-int n)
+
+(define prev "")
+(define curr "")
+(define i 0)
+(define groups 0)
+
+(while (< i n)
+    (read-line curr)
+    (if (!= curr prev)
+        (set groups (+ groups 1))
+        0
+    )
+    (set prev curr)
+    (set i (+ i 1))
+)
+
+(print groups)

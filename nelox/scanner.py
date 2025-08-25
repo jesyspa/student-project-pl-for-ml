@@ -64,7 +64,11 @@ class Scanner:
             self.start = self.current
             c = self.advance_char()
 
-            if c == '(':
+            if c == '$':
+                while not self.is_source_end() and self.peek_char() != '\n':
+                    self.advance_char()
+                    continue
+            elif c == '(':
                 return self.make_token(TokenType.LEFT_PAREN)
             elif c == ')':
                 return self.make_token(TokenType.RIGHT_PAREN)
