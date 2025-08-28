@@ -239,14 +239,14 @@ class InterpreterTest(unittest.TestCase):
     def test_get_seq_with_list(self):
         result = self.run_code("""
             (define xs (list 10 20 30))
-            (get-seq xs 1)
+            (get xs 1)
         """)
         self.assertEqual(result, 20)
 
     def test_get_seq_with_string(self):
         result = self.run_code("""
             (define s "hello")
-            (get-seq s 1)
+            (get s 1)
         """)
         self.assertEqual(result, "e")
 
@@ -254,20 +254,20 @@ class InterpreterTest(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.run_code("""
                 (define xs (list 1 2))
-                (get-seq xs 5)
+                (get xs 5)
             """)
 
     def test_get_seq_wrong_type(self):
         with self.assertRaises(RuntimeError):
             self.run_code("""
                 (define x 123)
-                (get-seq x 0)
+                (get x 0)
             """)
 
     def test_set_seq_variable(self):
         result = self.run_code("""
             (define data (list 1 2 3))
-            (set-seq data (list 7 8 9))
+            (set data (list 7 8 9))
             data
         """)
         self.assertEqual(result, [7, 8, 9])
@@ -275,7 +275,7 @@ class InterpreterTest(unittest.TestCase):
     def test_set_seq_string_variable(self):
         result = self.run_code("""
             (define txt "abc")
-            (set-seq txt "xyz")
+            (set txt "xyz")
             txt
         """)
         self.assertEqual(result, "xyz")
@@ -302,7 +302,7 @@ class InterpreterTest(unittest.TestCase):
             (while (< x 5)
                (set x (+ x 2))
                (set x (- x 1))
-                       
+
                 )
             x
         """

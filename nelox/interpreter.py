@@ -37,13 +37,13 @@ class Environment:
             raise RuntimeError(f"Undefined variable '{name}'")
 
 
-def _builtin_get(lst, index):
-    if not isinstance(lst, list):
-        raise RuntimeError(f"'get': expected list, got {type(lst)}")
+def _builtin_get(seq, index):
+    if not isinstance(seq, (list, str)):
+        raise RuntimeError(f"'get': expected list or string, got {type(seq)}")
     if not isinstance(index, int):
         raise RuntimeError(f"'get': expected integer index, got {type(index)}")
     try:
-        return lst[index]
+        return seq[index]
     except IndexError:
         raise RuntimeError("'get': index out of bounds")
 
@@ -172,7 +172,7 @@ class Interpreter:
 
                 elif name == "lambda":
                     param_tokens = args[0].elements
-                    body__expr = args[1:]
+                    body_expres = args[1:]
                     param_names = [tok.name.lexeme for tok in param_tokens]
 
                     def fn(*call_args):
@@ -180,7 +180,7 @@ class Interpreter:
                         for pname, param_val in zip(param_names, call_args):
                             local.define(pname, param_val)
                         result_ = None
-                        for express in body__expr:
+                        for express in body_expres:
                             result_ = self.evaluate(express, local)
                         return result_
                     return fn
@@ -250,22 +250,6 @@ class Interpreter:
                 elif name == "read-line":
                     var_name = args[0].name.lexeme
                     value = input()
-                    env.set(var_name, value)
-                    return value
-
-                elif name == "get-seq":
-                    container = self.evaluate(args[0], env)
-                    index = self.evaluate(args[1], env)
-                    if isinstance(container, list) or isinstance(container, str):
-                        try:
-                            return container[index]
-                        except IndexError:
-                            raise RuntimeError("'get-seq': index out of range")
-                    raise RuntimeError("'get-seq' expects a list or string")
-
-                elif name == "set-seq":
-                    var_name = args[0].name.lexeme
-                    value = self.evaluate(args[1], env)
                     env.set(var_name, value)
                     return value
 

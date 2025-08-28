@@ -50,6 +50,7 @@ class InterpreterTest(unittest.TestCase):
     def test_problem8(self): self.run_case("problem8")
     def test_problem9(self): self.run_case("problem9")
     def test_problem10(self): self.run_case("problem10")
+    def test_problem0(self): self.run_case("problem0")
 
 
 if __name__ == "__main__":
