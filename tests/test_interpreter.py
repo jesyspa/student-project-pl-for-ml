@@ -284,7 +284,7 @@ class InterpreterTest(unittest.TestCase):
         code = """
             (define n 0)
             (define m 0)
-            (read-int n m)
+            (read-ints n m)
             (print (* m n))
         """
         original_stdout = sys.stdout

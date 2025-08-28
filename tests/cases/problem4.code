@@ -1,7 +1,7 @@
 (define m 0)
 (define n 0)
 
-(read-int m n)
+(read-ints m n)
 
 (define area (* m n))
 (define result (div area 2))

@@ -74,6 +74,12 @@ def _not_equal(*args):
     return args[0] != args[1]
 
 
+def _builtin_get_ascii(c):
+    if not isinstance(c, str) or len(c) != 1:
+        raise RuntimeError("'get-ascii' expects a single character")
+    return ord(c)
+
+
 def raise_(msg):
     raise RuntimeError(msg)
 
@@ -103,8 +109,7 @@ def _define_builtins(env):
     env.define("to-list", lambda s: list(s))
     env.define("to-lower", lambda s: s.lower())
     env.define("to-upper", lambda s: s.upper())
-    env.define("get-ascii", lambda c: ord(c) if isinstance(c, str) and len(c) == 1 else raise_(
-        "'get-ascii' expects a single character"))
+    env.define("get-ascii", _builtin_get_ascii)
 
 
 class Interpreter:
@@ -267,17 +272,32 @@ class Interpreter:
                     return result
 
                 elif name == "read-int":
+                    if len(args) != 1:
+                        raise RuntimeError("'read-int' expects exactly one variable")
+                    var_name = args[0].name.lexeme
+                    try:
+                        value = int(input())
+                    except ValueError:
+                        raise RuntimeError("'read-int' expects a single integer input")
+                    if env.find_env(var_name):
+                        env.set(var_name, value)
+                    else:
+                        env.define(var_name, value)
+                    return value
+
+                elif name == "read-ints":
                     var_tokens = [arg.name.lexeme for arg in args]
                     try:
                         values = list(map(int, input().split()))
                     except ValueError:
-                        raise RuntimeError("'read-int' expects integer input")
-
+                        raise RuntimeError("'read-ints' expects integer input")
                     if len(values) != len(var_tokens):
-                        raise RuntimeError(f"'read-int' expected {len(var_tokens)} values, got {len(values)}")
-
+                        raise RuntimeError(f"'read-ints' expected {len(var_tokens)} values, got {len(values)}")
                     for var_name, val in zip(var_tokens, values):
-                        env.set(var_name, val) if env.find_env(var_name) else env.define(var_name, val)
+                        if env.find_env(var_name):
+                            env.set(var_name, val)
+                        else:
+                            env.define(var_name, val)
                     return values
 
             func = self.evaluate(head, env)

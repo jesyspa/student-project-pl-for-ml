@@ -10,7 +10,7 @@
 (define sum 0)
 
 (while (< i n)
-    (read-int a b c)
+    (read-ints a b c)
     (set sum (+ a b))
     (set sum (+ sum c))
     (if (>= sum 2)

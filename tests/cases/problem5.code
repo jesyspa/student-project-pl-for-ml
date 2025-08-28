@@ -1,7 +1,7 @@
 (define n 0)
 (define k 0)
 
-(read-int n k)
+(read-ints n k)
 
 (define scores (list))
 (define i 0)
