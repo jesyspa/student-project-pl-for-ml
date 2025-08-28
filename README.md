@@ -40,7 +40,6 @@ pytest tests/test_scanner.py
 4. Or click the green ▶ next to a test function
 
 ## Interpreter
-
 The interpreter supports function definitions and basic operations, including:
 1. Defining and updating variables
 2. Arithmetic operations

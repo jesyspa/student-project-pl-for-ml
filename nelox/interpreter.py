@@ -37,6 +37,23 @@ class Environment:
             raise RuntimeError(f"Undefined variable '{name}'")
 
 
+def _builtin_get(seq, index):
+    if not isinstance(seq, (list, str)):
+        raise RuntimeError(f"'get': expected list or string, got {type(seq)}")
+    if not isinstance(index, int):
+        raise RuntimeError(f"'get': expected integer index, got {type(index)}")
+    try:
+        return seq[index]
+    except IndexError:
+        raise RuntimeError("'get': index out of bounds")
+
+
+def _builtin_length(lst):
+    if not isinstance(lst, list):
+        raise RuntimeError(f"'length': expected list, got {type(lst)}")
+    return len(lst)
+
+
 def _comparison(op):
     return op
 
@@ -57,6 +74,16 @@ def _not_equal(*args):
     return args[0] != args[1]
 
 
+def _builtin_get_ascii(c):
+    if not isinstance(c, str) or len(c) != 1:
+        raise RuntimeError("'get-ascii' expects a single character")
+    return ord(c)
+
+
+def raise_(msg):
+    raise RuntimeError(msg)
+
+
 def _define_builtins(env):
     env.define("true", True)
     env.define("false", False)
@@ -74,6 +101,15 @@ def _define_builtins(env):
     env.define("not", lambda x: not x)
     env.define("!=", _comparison(operator.ne))
     env.define("print", lambda *args: print(*args))
+    env.define("list", lambda *args: list(args))
+    env.define("get", _builtin_get)
+    env.define("length", _builtin_length)
+    env.define("str", lambda *args: str(args))
+    env.define("all-unique", lambda lst: list(set(lst)))
+    env.define("to-list", lambda s: list(s))
+    env.define("to-lower", lambda s: s.lower())
+    env.define("to-upper", lambda s: s.upper())
+    env.define("get-ascii", _builtin_get_ascii)
 
 
 class Interpreter:
@@ -141,35 +177,26 @@ class Interpreter:
 
                 elif name == "lambda":
                     param_tokens = args[0].elements
-                    body = args[1]
+                    body_expres = args[1:]
                     param_names = [tok.name.lexeme for tok in param_tokens]
 
                     def fn(*call_args):
                         local = Environment(parent=env)
                         for pname, param_val in zip(param_names, call_args):
                             local.define(pname, param_val)
-                        return self.evaluate(body, local)
-
+                        result_ = None
+                        for express in body_expres:
+                            result_ = self.evaluate(express, local)
+                        return result_
                     return fn
-
-                elif name == "begin":
-                    return self.interpret(args)
-
-                elif name == "read-int":
-                    var_name = args[0].name.lexeme
-                    try:
-                        value = int(input())
-                    except ValueError:
-                        raise RuntimeError("'read-int' requires an integer number")
-                    env.set(var_name, value)
-                    return value
 
                 elif name == "while":
                     condition = args[0]
-                    body = args[1]
+                    body__expr = args[1:]
                     result = None
                     while self.evaluate(condition, env):
-                        result = self.evaluate(body, env)
+                        for expr in body__expr:
+                            result = self.evaluate(expr, env)
                     return result
 
                 elif name == "and":
@@ -183,6 +210,95 @@ class Interpreter:
                         if self.evaluate(arg, env):
                             return True
                     return False
+
+                elif name == "head":
+                    lst = self.evaluate(args[0], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError(f"'head' expects a list, got {type(lst)}")
+                    return lst[0] if lst else None
+
+                elif name == "tail":
+                    lst = self.evaluate(args[0], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError(f"'tail' expects a list, got {type(lst)}")
+                    return lst[1:] if len(lst) > 0 else []
+
+                elif name == "append":
+                    val1 = self.evaluate(args[0], env)
+                    val2 = self.evaluate(args[1], env)
+                    if isinstance(val1, list) and isinstance(val2, list):
+                        return val1 + val2
+                    elif isinstance(val1, str) and isinstance(val2, str):
+                        return val1 + val2
+                    else:
+                        raise RuntimeError("'append' expects two lists or two strings")
+
+                elif name == "reverse":
+                    lst = self.evaluate(args[0], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError("'reverse' expects a list")
+                    return list(reversed(lst))
+
+                elif name == "push":
+                    element = self.evaluate(args[0], env)
+                    lst = self.evaluate(args[1], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError("'push' expects a list as the second argument")
+                    return [element] + lst
+
+                elif name == "empty?":
+                    lst = self.evaluate(args[0], env)
+                    if not isinstance(lst, list):
+                        raise RuntimeError("'empty?' expects a list")
+                    return len(lst) == 0
+
+                elif name == "read-line":
+                    var_name = args[0].name.lexeme
+                    value = input()
+                    env.set(var_name, value)
+                    return value
+
+                elif name == "for":
+                    var_token = args[0].name
+                    start = self.evaluate(args[1], env)
+                    end = self.evaluate(args[2], env)
+                    body = args[3]
+
+                    result = None
+                    for i in range(start, end):
+                        loop_env = Environment(parent=env)
+                        loop_env.define(var_token.lexeme, i)
+                        result = self.evaluate(body, loop_env)
+                    return result
+
+                elif name == "read-int":
+                    if len(args) != 1:
+                        raise RuntimeError("'read-int' expects exactly one variable")
+                    var_name = args[0].name.lexeme
+                    try:
+                        value = int(input())
+                    except ValueError:
+                        raise RuntimeError("'read-int' expects a single integer input")
+                    if env.find_env(var_name):
+                        env.set(var_name, value)
+                    else:
+                        env.define(var_name, value)
+                    return value
+
+                elif name == "read-ints":
+                    var_tokens = [arg.name.lexeme for arg in args]
+                    try:
+                        values = list(map(int, input().split()))
+                    except ValueError:
+                        raise RuntimeError("'read-ints' expects integer input")
+                    if len(values) != len(var_tokens):
+                        raise RuntimeError(f"'read-ints' expected {len(var_tokens)} values, got {len(values)}")
+                    for var_name, val in zip(var_tokens, values):
+                        if env.find_env(var_name):
+                            env.set(var_name, val)
+                        else:
+                            env.define(var_name, val)
+                    return values
 
             func = self.evaluate(head, env)
             evaluated_args = [self.evaluate(arg, env) for arg in args]

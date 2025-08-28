@@ -1,0 +1,20 @@
+(define s "")
+(read-line s)
+
+(define target "hello")
+(define i 0)
+(define j 0)
+(define len_s (length (to-list s)))
+(define len_t (length (to-list target)))
+
+(while (and (< i len_s) (< j len_t))
+    (if (= (get (to-list s) i) (get (to-list target) j))
+        (set j (+ j 1))
+        0)
+    (set i (+ i 1))
+)
+
+(if (= j len_t)
+    (print "yes")
+    (print "no")
+)

@@ -1,0 +1,23 @@
+(define n 0)
+(read-int n)
+
+(define i 0)
+(define count 0)
+
+(define a 0)
+(define b 0)
+(define c 0)
+(define sum 0)
+
+(while (< i n)
+    (read-ints a b c)
+    (set sum (+ a b))
+    (set sum (+ sum c))
+    (if (>= sum 2)
+        (set count (+ count 1))
+        0
+    )
+    (set i (+ i 1))
+)
+
+(print count)

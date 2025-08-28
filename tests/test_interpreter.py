@@ -107,12 +107,10 @@ class InterpreterTest(unittest.TestCase):
         result = self.run_code("""
             (define make-counter
               (lambda ()
-                (begin
                   (define count 0)
                   (lambda ()
-                    (begin
                       (set count (+ count 1))
-                      count)))))
+                      count)))
 
             (define c (make-counter))
             (c)
@@ -141,7 +139,7 @@ class InterpreterTest(unittest.TestCase):
     def test_while_loop(self):
         code = """
             (define x 0)
-            (while (< x 5)
+            (while (< x 5) $commenting test
                 (set x (+ x 1)))
             x
         """
@@ -176,6 +174,140 @@ class InterpreterTest(unittest.TestCase):
         self.assertEqual(self.run_code("(and (> 3 2) (< 5 10))"), True)
         self.assertEqual(self.run_code("(or (= 1 2) (> 10 3))"), True)
         self.assertEqual(self.run_code("(and false false true)"), False)
+
+    def test_head(self):
+        self.assertEqual(self.run_code("(head (list 1 2 3))"), 1)
+        self.assertEqual(self.run_code("(head (list))"), None)
+
+    def test_tail(self):
+        self.assertEqual(self.run_code("(tail (list 1 2 3))"), [2, 3])
+        self.assertEqual(self.run_code("(tail (list 1))"), [])
+        self.assertEqual(self.run_code("(tail (list))"), [])
+
+    def test_append_lists(self):
+        self.assertEqual(self.run_code("(append (list 1 2) (list 3 4))"), [1, 2, 3, 4])
+
+    def test_append_strings(self):
+        self.assertEqual(self.run_code('(append "hello" " world")'), "hello world")
+
+    def test_append_type_error(self):
+        with self.assertRaises(RuntimeError):
+            self.run_code('(append (list 1 2) "not a list")')
+
+    def test_reverse(self):
+        self.assertEqual(self.run_code("(reverse (list 1 2 3))"), [3, 2, 1])
+        self.assertEqual(self.run_code("(reverse (list))"), [])
+
+    def test_reverse_type_error(self):
+        with self.assertRaises(RuntimeError):
+            self.run_code('(reverse "not a list")')
+
+    def test_push(self):
+        self.assertEqual(self.run_code("(push 0 (list 1 2 3))"), [0, 1, 2, 3])
+
+    def test_push_type_error(self):
+        with self.assertRaises(RuntimeError):
+            self.run_code('(push 1 "not a list")')
+
+    def test_empty_question(self):
+        self.assertEqual(self.run_code("(empty? (list))"), True)
+        self.assertEqual(self.run_code("(empty? (list 1 2))"), False)
+
+    def test_empty_type_error(self):
+        with self.assertRaises(RuntimeError):
+            self.run_code('(empty? "not a list")')
+
+    def test_read_line(self):
+        code = """
+            (define name "")
+            (read-line name)
+            name
+        """
+        result = self.run_code_with_input(code, "Alice\n")
+        self.assertEqual(result, "Alice")
+
+    def test_for_loop(self):
+        result = self.run_code("""
+            (define sum 0)
+            (for i 0 4
+                (set sum (+ sum 1))
+            )
+            sum
+        """)
+        self.assertEqual(result, 4)
+
+    def test_get_seq_with_list(self):
+        result = self.run_code("""
+            (define xs (list 10 20 30))
+            (get xs 1)
+        """)
+        self.assertEqual(result, 20)
+
+    def test_get_seq_with_string(self):
+        result = self.run_code("""
+            (define s "hello")
+            (get s 1)
+        """)
+        self.assertEqual(result, "e")
+
+    def test_get_seq_out_of_bounds(self):
+        with self.assertRaises(RuntimeError):
+            self.run_code("""
+                (define xs (list 1 2))
+                (get xs 5)
+            """)
+
+    def test_get_seq_wrong_type(self):
+        with self.assertRaises(RuntimeError):
+            self.run_code("""
+                (define x 123)
+                (get x 0)
+            """)
+
+    def test_set_seq_variable(self):
+        result = self.run_code("""
+            (define data (list 1 2 3))
+            (set data (list 7 8 9))
+            data
+        """)
+        self.assertEqual(result, [7, 8, 9])
+
+    def test_set_seq_string_variable(self):
+        result = self.run_code("""
+            (define txt "abc")
+            (set txt "xyz")
+            txt
+        """)
+        self.assertEqual(result, "xyz")
+
+    def test_read_int_and_print_result(self):
+        code = """
+            (define n 0)
+            (define m 0)
+            (read-ints n m)
+            (print (* m n))
+        """
+        original_stdout = sys.stdout
+        try:
+            sys.stdout = io.StringIO()
+            self.run_code_with_input(code, "2 3")
+            output = sys.stdout.getvalue().strip()
+            self.assertEqual(output, "6")
+        finally:
+            sys.stdout = original_stdout
+
+    def test_while_loop_two_statements(self):
+        code = """
+            (define x 0)
+            (while (< x 5)
+               (set x (+ x 2))
+               (set x (- x 1))
+
+                )
+            x
+        """
+        result = self.run_code(code)
+        self.assertEqual(result, 5)
 
 
 if __name__ == "__main__":

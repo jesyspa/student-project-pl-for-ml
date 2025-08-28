@@ -1,0 +1,30 @@
+(define n 0)
+(define k 0)
+
+(read-ints n k)
+
+(define scores (list))
+(define i 0)
+(define x 0)
+
+(while (< i n)
+    (read-int x)
+    (set scores (append scores (list x)))
+    (set i (+ i 1))
+)
+
+(define threshold (get scores (- k 1)))
+
+(define count 0)
+(define j 0)
+(define sc 0)
+(while (< j n)
+    (set sc (get scores j))
+    (if (and (>= sc threshold) (> sc 0))
+        (set count (+ count 1))
+        0
+    )
+    (set j (+ j 1))
+)
+
+(print count)

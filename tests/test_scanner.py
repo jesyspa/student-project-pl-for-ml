@@ -27,7 +27,7 @@ class TestScanner(unittest.TestCase):
             scanner.scan_tokens()
 
     def test_simple_expression(self):
-        scanner = Scanner("(add 2 3)")
+        scanner = Scanner("(add 2$this is comment\n 3)")
         types = [t.type for t in scanner.scan_tokens()]
 
         expected = [

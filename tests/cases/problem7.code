@@ -1,0 +1,31 @@
+(define n 0)
+(define s "")
+
+(read-int n)
+(read-line s)
+
+(define lst (to-list s))
+(define a-wins 0)
+(define d-wins 0)
+(define ch "")
+(define i 0)
+
+(while (< i n)
+    (set ch (get lst i))
+    (if (= ch "A")
+        (set a-wins (+ a-wins 1))
+        (if (= ch "D")
+            (set d-wins (+ d-wins 1))
+            0
+        )
+    )
+    (set i (+ i 1))
+)
+
+(if (> a-wins d-wins)
+    (print "Anton")
+    (if (> d-wins a-wins)
+        (print "Danik")
+        (print "Friendship")
+    )
+)
