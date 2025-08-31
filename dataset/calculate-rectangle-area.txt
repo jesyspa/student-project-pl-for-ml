@@ -1,0 +1,4 @@
+(define x 4)
+(define y 5)
+(define area (* x y))
+(print area)

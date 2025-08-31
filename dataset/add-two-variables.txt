@@ -1,0 +1,4 @@
+(define a 7)
+(define b 3)
+(define sum (+ a b))
+(print sum)
