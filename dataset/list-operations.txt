@@ -1,4 +1,0 @@
-(define numbers (list 10 20 30 40 50))
-(define second (list 1 2 3 4 5))
-(define first (+ 1 numbers))
-(print first)
